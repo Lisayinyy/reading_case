@@ -425,6 +425,32 @@ export const papers = [
     authors: 'Guo et al.',
     tags: ['reasoning', 'reinforcement learning'],
     abstract: 'DeepSeek-R1 trains a reasoning model with pure large-scale RL on top of the V3 base, then distills the result into smaller dense models. R1-Distill-Qwen and R1-Distill-Llama reach o1-mini level performance at single-digit-billion sizes.',
+    sections: [
+      {
+        title: 'Abstract',
+        body: `General reasoning represents a long-standing and formidable challenge in AI. Recent breakthroughs, exemplified by LLMs and chain-of-thought prompting, have achieved considerable success on foundational reasoning tasks, but heavily depend on human-annotated demonstrations. This paper shows that the reasoning abilities of LLMs can be incentivized through pure reinforcement learning, without any human-labeled reasoning trajectories. The proposed RL framework facilitates the emergent development of advanced reasoning patterns such as self-reflection, verification, and dynamic strategy adaptation, and the trained model surpasses its counterparts trained via supervised learning on mathematics, coding, and STEM tasks.`,
+      },
+      {
+        title: 'Method: GRPO',
+        body: `DeepSeek-R1-Zero is trained with Group Relative Policy Optimization (GRPO): instead of training a separate value model, GRPO samples a group of rollouts for each prompt and uses the group's relative reward as the advantage. The reward signal is a simple rule-based score (correct vs incorrect) on math, code, and format — no reward model, no human preference data.
+
+This is the move that made reasoning emerge from pure RL. With nothing but 'right answer / wrong answer' as feedback, the model spontaneously grew long chains of thought, self-correction, and aha moments.`,
+      },
+      {
+        title: 'From R1-Zero to R1',
+        body: `R1-Zero's outputs were usable but the language mixing and readability were poor. R1 keeps the same RL core but adds a small cold-start SFT pass on a few thousand high-quality long-CoT examples before the RL stage, then runs a second RL pass with a language-consistency reward. The result is a reasoning model that is both strong and pleasant to read.`,
+      },
+      {
+        title: 'Distillation to small models',
+        body: `The most surprising result: reasoning ability transfers cleanly via SFT distillation. DeepSeek collects 800K high-quality reasoning samples from R1 and fine-tunes Qwen and Llama checkpoints of various sizes on them. R1-Distill-Qwen-7B and R1-Distill-Llama-8B reach o1-mini level performance on math and code benchmarks, beating many larger open models.
+
+This is what proved to the field that reasoning is a transferable behaviour, not a property of model size.`,
+      },
+      {
+        title: 'Why it matters',
+        body: `DeepSeek-R1 is the first open-weights reasoning model competitive with OpenAI's o1, and the first to show that pure RL (not RLHF or RLAIF) is enough to elicit long-CoT reasoning. Combined with R1's distillation results, the paper effectively redrew the open-weights reasoning landscape and seeded a wave of small distilled reasoners across the community.`,
+      },
+    ],
     note: 'Reasoning did not need a secret training trick. It needed a reward signal that said “think longer” and a model willing to listen.',
     path: [
       ['GRPO', 'group-relative policy optimization removes the need for a separate critic.'],
@@ -440,6 +466,34 @@ export const papers = [
     authors: 'Qwen Team',
     tags: ['open weights', 'reasoning'],
     abstract: 'Qwen3 is a family of dense and MoE models trained on 36T tokens with a unified thinking/non-thinking mode. The smallest 0.6B variant runs on low-end devices, while the 235B MoE flagship is competitive with frontier closed models.',
+    sections: [
+      {
+        title: 'Abstract',
+        body: `This work presents Qwen3, the latest version of the Qwen model family. Qwen3 includes both dense and Mixture-of-Expert (MoE) architectures, with parameter scales ranging from 0.6 to 235 billion. A key innovation is the integration of thinking mode (for complex, multi-step reasoning) and non-thinking mode (for rapid, context-driven responses) into a unified framework, eliminating the need to switch between different models. Qwen3 also introduces a thinking budget mechanism, allowing users to allocate computational resources adaptively during inference. Compared to Qwen2.5, Qwen3 expands multilingual support from 29 to 119 languages and dialects.`,
+      },
+      {
+        title: 'Unified thinking + non-thinking',
+        body: `Earlier reasoning models (QwQ, DeepSeek-R1) and chat models lived in separate model families. Qwen3 collapses both into one checkpoint: the same weights can either produce a long thinking trace or a fast direct answer, gated by a chat-template flag.
+
+This removes the operational pain of picking the right model per query, and lets the same deployment serve both patterns.`,
+      },
+      {
+        title: 'Thinking budget',
+        body: `Qwen3 exposes a \`thinking_budget\` parameter that controls how many tokens the model is allowed to spend on internal reasoning before producing the visible answer. Setting it low keeps latency tight for simple queries; setting it high (or to 'max') spends more compute on hard problems.
+
+This is the same idea behind Anthropic's adaptive thinking effort, now in an open-weights model.`,
+      },
+      {
+        title: 'MoE flagship: 235B / 22B active',
+        body: `The flagship Qwen3-235B is a sparse MoE with 235B total / 22B active parameters, scaling efficiency roughly 2× over Qwen2.5. The series also ships 0.6B, 1.7B, 4B, 8B, 14B, and 32B dense variants for on-device and edge deployment.
+
+Knowledge distillation from the flagship is used to build the smaller models, so the 32B dense tracks the 235B MoE more closely than would be expected from a pure pretraining run.`,
+      },
+      {
+        title: 'Why it matters',
+        body: `Qwen3 is the first open-weights family to ship a unified thinking/non-thinking model at every size from 0.6B to 235B. The combination of 'one model for both modes', adaptive thinking budget, and 119-language coverage makes it the most deployment-friendly open-weights reasoning model of 2025 H1.`,
+      },
+    ],
     note: 'One model that knows when to think and when to answer. The cost of reasoning is paid only when the prompt asks for it.',
     path: [
       ['Thinking toggle', 'a single model that switches between fast and slow modes per request.'],
@@ -455,6 +509,28 @@ export const papers = [
     authors: 'Abdin et al.',
     tags: ['small model', 'reasoning'],
     abstract: 'Phi-4 is a 14B parameter model trained on a mix of synthetic and organic data. Strong performance on math and reasoning benchmarks is achieved with significantly more synthetic data than prior Phi models, including novel synthetic textbook content.',
+    sections: [
+      {
+        title: 'Abstract',
+        body: `We present phi-4, a 14-billion parameter language model developed with a training recipe that is centrally focused on data quality. Unlike most language models, where pre-training is based primarily on organic data sources, phi-4 strategically incorporates synthetic data throughout the training process. While previous Phi models largely distill the capabilities of a teacher model (GPT-4), phi-4 substantially surpasses its teacher model on STEM-focused QA capabilities, giving evidence that our data-generation and post-training techniques go beyond distillation. Despite minimal changes to the phi-3 architecture, phi-4 achieves strong performance relative to its size, especially on reasoning-focused benchmarks, due to improved data, training curriculum, and innovations in the post-training scheme.`,
+      },
+      {
+        title: 'Synthetic-first training',
+        body: `Phi-4's pretraining corpus is roughly half organic web / code and half carefully crafted synthetic data — synthetic textbooks, synthetic exercises, synthetic dialogues that the team wrote to teach specific reasoning skills. The seed data is small; the synthetic generators are themselves high-quality models that produce targeted, diversity-controlled examples.
+
+This is what allows a 14B model to outperform GPT-4 on STEM QA, which the paper explicitly calls out as evidence that the recipe is not just distillation.`,
+      },
+      {
+        title: 'Curriculum and post-training',
+        body: `The training curriculum mixes organic and synthetic data in a sequence that ramps up reasoning difficulty over time. Post-training uses a mix of DPO and RLHF with a heavy emphasis on math and code, again leaning on synthetic preference data where ground-truth answers exist.
+
+The architectural changes from phi-3 are minimal — the gains are almost entirely from data and curriculum design.`,
+      },
+      {
+        title: 'Why it matters',
+        body: `Phi-4 is the strongest evidence yet that small models with carefully designed synthetic data can punch far above their parameter count. The MIT-licensed 14B weights make it one of the most capable reasoning models that fits on a single consumer GPU.`,
+      },
+    ],
     note: 'Synthetic data is no longer a workaround for small models. With the right seeds, a 14B model can out-reason much larger ones on math.',
     path: [
       ['Synthetic-heavy mix', 'the bulk of the training data is generated and curated, not scraped.'],
@@ -470,6 +546,32 @@ export const papers = [
     authors: 'Mehta et al.',
     tags: ['on-device', 'open training'],
     abstract: 'OpenELM is a 270M–1.1B parameter model family designed for on-device use. The paper emphasizes a fully open training pipeline, layer-wise scaling, and tight integration with Apple’s MLX framework.',
+    sections: [
+      {
+        title: 'Abstract',
+        body: `The reproducibility and transparency of large language models are crucial for advancing open research, ensuring the trustworthiness of results, and enabling investigations into data and model biases, as well as potential risks. To this end, we release OpenELM, a state-of-the-art open language model. OpenELM uses a layer-wise scaling strategy to efficiently allocate parameters within each layer of the transformer model, leading to enhanced accuracy. For example, with a parameter budget of approximately one billion parameters, OpenELM exhibits a 2.36% improvement in accuracy compared to OLMo while requiring 2× fewer pre-training tokens.`,
+      },
+      {
+        title: 'Layer-wise scaling',
+        body: `Standard transformers allocate the same hidden size and number of heads to every layer. OpenELM instead varies the width across depth: early layers are narrower, later layers are wider. The paper's analysis shows this simple change gives a better accuracy / parameter trade-off than uniform scaling, with no change to training recipe.
+
+This is a useful reminder that 'transformer block' does not have to mean 'every block is identical'.`,
+      },
+      {
+        title: 'Open training pipeline',
+        body: `OpenELM is one of the first open-weights models where the full training pipeline is released, not just the final checkpoint: data filtering, tokenizer, training code, intermediate checkpoints, and training logs. The paper explicitly cites research reproducibility and bias investigation as the motivation.
+
+For the on-device community this matters more than the model itself, because the recipe can be re-run.`,
+      },
+      {
+        title: 'MLX-first inference',
+        body: `The model ships with a custom Apple MLX implementation optimized for Apple silicon, not just a Hugging Face port. This is a deliberate bet that on-device LLM use on iPhone, iPad, and Mac will be a major deployment target.`,
+      },
+      {
+        title: 'Why it matters',
+        body: `OpenELM is not the strongest 1B model on benchmarks, but it is one of the most open, and it is the one Apple is willing to ship on-device. Together with the layer-wise scaling result, the paper pushed the open-weights community toward a more honest 'release the whole pipeline' standard.`,
+      },
+    ],
     note: 'Tiny models are a different product, not a smaller one. On-device means tradeoffs the cloud never has to make.',
     path: [
       ['Layer-wise scaling', 'allocates more parameters to deeper layers instead of widening every block equally.'],
@@ -485,6 +587,30 @@ export const papers = [
     authors: 'Liu et al.',
     tags: ['multimodal', 'instruction tuning'],
     abstract: 'LLaVA connects a CLIP vision encoder to a Vicuna language model with a projection layer, then applies visual instruction tuning on synthetic image–instruction data. It reaches 92.53% on the ScienceQA benchmark, a new state of the art.',
+    sections: [
+      {
+        title: 'Abstract',
+        body: `Instruction tuning large language models (LLMs) using machine-generated instruction-following data has improved zero-shot capabilities on new tasks, but the idea is less explored in the multimodal field. In this paper, we present the first attempt to use language-only GPT-4 to generate multimodal language-image instruction-following data. By instruction tuning on such generated data, we introduce LLaVA: Large Language and Vision Assistant, an end-to-end trained large multimodal model that connects a vision encoder and LLM for general-purpose visual and language understanding. Our early experiments show that LLaVA demonstrates impressive multimodal chat abilities, sometimes exhibiting the behaviors of multimodal GPT-4 on unseen images/instructions, and yields an 85.1% relative score compared with GPT-4 on a synthetic multimodal instruction-following dataset. When fine-tuned on Science QA, the synergy of LLaVA and GPT-4 achieves a new state-of-the-art accuracy of 92.53%.`,
+      },
+      {
+        title: 'Visual instruction synthesis',
+        body: `LLaVA's key idea is to use GPT-4 (text only) to write visual instruction-following data from image captions and bounding boxes. The captions and boxes come from existing datasets like COCO; GPT-4 turns them into questions, descriptions, and conversations about the image.
+
+This sidesteps the cost of annotating visual instructions with humans and became the template for almost every later multimodal model.`,
+      },
+      {
+        title: 'Architecture',
+        body: `LLaVA connects a pretrained CLIP ViT-L/14 vision encoder to a Vicuna LLM via a single linear projection layer that maps vision tokens into the LLM's word embedding space. The LLM is fine-tuned on the synthetic visual instruction data; the vision encoder stays frozen.`,
+      },
+      {
+        title: 'ScienceQA result',
+        body: `On ScienceQA, LLaVA combined with GPT-4 (LLaVA as a retriever, GPT-4 as the final answer generator) reaches 92.53% accuracy — a new state of the art at the time, and the first time a multimodal model clearly beat the prior SOTA on a science benchmark.`,
+      },
+      {
+        title: 'Why it matters',
+        body: `LLaVA established the now-standard recipe for open multimodal models: a frozen pretrained vision encoder, a small projection layer, and instruction tuning on synthetic visual chat data. Almost every later VLM (MiniGPT-4, LLaVA-1.5, ShareGPT4V, etc.) is a direct descendant of this template.`,
+      },
+    ],
     note: 'A vision encoder and a language model do not need to be designed together to be glued together well. The seam is where the work happens.',
     path: [
       ['Projection layer', 'a small MLP maps vision tokens into the language model’s embedding space.'],
@@ -500,6 +626,28 @@ export const papers = [
     authors: 'Hu et al.',
     tags: ['small model', 'efficiency'],
     abstract: 'MiniCPM is a family of 2B parameter models trained with a “SLM as a Philosophy” approach. MiniCPM-2B matches or surpasses larger models on benchmarks while being efficient enough to deploy on phones and laptops.',
+    sections: [
+      {
+        title: 'Abstract',
+        body: `The burgeoning interest in developing LLMs with up to trillion parameters has been met with concerns regarding resource efficiency and practical expense, particularly given the immense cost of experimentation. This scenario underscores the importance of exploring the potential of Small Language Models (SLMs) as a resource-efficient alternative. We introduce MiniCPM, specifically the 1.2B and 2.4B non-embedding parameter variants, which excel in their respective categories and demonstrate capabilities on par with 7B-13B LLMs. Our approach exhibits scalability in both model and data dimensions. For model scaling, we employ extensive model wind tunnel experiments. For data scaling, we introduce a Warmup-Stable-Decay (WSD) learning rate scheduler, conducive to continuous training and domain adaptation. We present an in-depth analysis of the training dynamics that occur in the WSD LRS. With WSD, we are now able to efficiently study data-model scaling law without extensive retraining experiments.`,
+      },
+      {
+        title: 'Warmup-Stable-Decay LR',
+        body: `MiniCPM's main training-systems contribution is the WSD learning rate schedule: warm up to the peak, hold there for most of training, then decay sharply to zero. Unlike cosine, WSD supports a 'resume from any point' workflow — you can stop at any time during the stable phase and add more data or continue training without retraining from scratch.
+
+The paper's analysis of the loss dynamics during the decay phase became a standard reference for SLM training.`,
+      },
+      {
+        title: 'Scaling-law re-examination',
+        body: `Using WSD's resumption property, the team re-derives a compute-optimal data-to-parameter ratio for SLMs and finds it is significantly higher than Chinchilla-optimal. In other words, small models benefit from more tokens per parameter than large models do — the opposite of what people had been assuming.
+
+This result, more than any single model release, is what made WSD a default choice for small-model training.`,
+      },
+      {
+        title: 'Why it matters',
+        body: `MiniCPM is one of the strongest small LLMs released in 2024 and the first open-weights model where the training recipe (WSD + data scaling) is more influential than the architecture. It is the clearest demonstration yet that for sub-3B models, training infrastructure matters more than model size.`,
+      },
+    ],
     note: 'A 2B model on a phone is the new normal for serious on-device work. MiniCPM-2B reads like a thesis on what scale really means.',
     path: [
       ['WSD learning rate', 'a warmup–stable–decay schedule that gives consistently better results.'],
@@ -515,6 +663,32 @@ export const papers = [
     authors: 'Wang et al.',
     tags: ['multimodal', 'vision-language'],
     abstract: 'Qwen2-VL introduces a Naive Dynamic Resolution mechanism to handle arbitrary input image sizes, Multimodal RoPE for joint positional encoding, and a unified interface for images, video, and text. The flagship 72B variant reaches state-of-the-art on multimodal benchmarks.',
+    sections: [
+      {
+        title: 'Abstract',
+        body: `We present the Qwen2-VL Series, an advanced upgrade of the previous Qwen-VL models that redefines the conventional predetermined-resolution approach in visual processing. Qwen2-VL introduces the Naive Dynamic Resolution mechanism, which enables the model to dynamically process images of varying resolutions into different numbers of visual tokens. This approach allows the model to generate more efficient and accurate visual representations, closely aligning with human perceptual processes. The model also integrates Multimodal Rotary Position Embedding (M-RoPE), facilitating the effective fusion of positional information across text, images, and videos. We employ a unified paradigm for processing both images and videos, enhancing the model's visual perception capabilities.`,
+      },
+      {
+        title: 'Dynamic resolution',
+        body: `Most VLMs resize every input image to a fixed resolution (typically 224×224 or 336×336) before patching. Qwen2-VL instead keeps images at their native resolution and converts them into a variable number of visual tokens, so a small thumbnail produces few tokens and a 4K document image produces many.
+
+This matters disproportionately for document and chart understanding, where small text gets destroyed by aggressive resizing.`,
+      },
+      {
+        title: 'Multimodal RoPE (M-RoPE)',
+        body: `Qwen2-VL extends Rotary Position Embedding to three axes: temporal (token position in the sequence), spatial height, and spatial width. This lets one positional encoding carry both text ordering and image-grid coordinates, so the model can handle arbitrary image and video resolutions without per-size retraining.`,
+      },
+      {
+        title: 'Agentic abilities',
+        body: `Qwen2-VL-72B is tuned to operate a phone or browser from screenshots — given an image of a UI plus a natural-language instruction, it returns the next action. This is the same direction as Anthropic's computer-use demo, but open-weights.
+
+The 72B flagship reaches results comparable to GPT-4o and Claude 3.5 Sonnet on multimodal benchmarks, and outperforms other open generalist VLMs at release.`,
+      },
+      {
+        title: 'Why it matters',
+        body: `Qwen2-VL is the first open VLM where dynamic resolution and M-RoPE are treated as first-class architectural choices rather than hacks. The 2B / 8B / 72B scaling also makes it the first open multimodal family with credible on-device to flagship coverage.`,
+      },
+    ],
     note: 'A vision tower that does not crop is closer to how humans read an image — at the size the image is, not at the size a model wants.',
     path: [
       ['Naive Dynamic Resolution', 'no fixed image size; the model adapts to whatever the user sends.'],
@@ -569,6 +743,32 @@ export const papers = [
     authors: 'MiniMax-AI',
     tags: ['multimodal', 'efficiency'],
     abstract: 'MiniMax-M3 is a native multimodal model with a 1M-token context, ~428B total parameters, and ~23B activated. The paper introduces MiniMax Sparse Attention (MSA), which delivers 9× prefill and 15× decode speedups over M2 at 1M context, reducing per-token compute to 1/20. M3 is trained with mixed text/image/video from the first step, and reaches frontier coding and cowork performance.',
+    sections: [
+      {
+        title: 'Abstract',
+        body: `We introduce MiniMax Sparse Attention (MSA), a blockwise sparse attention built upon Grouped Query Attention (GQA). A lightweight Index Branch scores key-value blocks and independently selects a Top-k subset for each GQA group, enabling group-specific sparse retrieval while maintaining efficient block-level execution; the Main Branch then performs exact block-sparse attention over only the selected blocks. Designed around a principle of simplicity and scalability, MSA is deliberately streamlined, making it straightforward to deploy efficiently across a broad range of GPUs. To translate sparsity into practical speedups, we co-design MSA with a GPU execution path that uses exp-free Top-k selection and KV-outer sparse attention to improve tensor-core utilization under block-granular access. On a 109B-parameter model with native multimodal training, MSA performs on par with GQA while reducing per-token attention compute by 28.4× at 1M context. Paired with our co-designed kernel, MSA achieves 14.2× prefill and 7.6× decoding wall-clock speedups on H800.`,
+      },
+      {
+        title: 'Architecture: MSA',
+        body: `MiniMax-M3 is a native multimodal model with ~428B total / ~23B activated parameters, trained on text / image / video jointly from the first step, with a 1M-token context. The core innovation is MSA: a small Index Branch scores KV blocks inexpensively, and a Main Branch then runs exact block-sparse attention over only the Top-k blocks chosen by the indexer, on a per-GQA-group basis.
+
+The sparsity is per-group, not global, so different query heads can attend to different blocks — which the paper shows preserves quality on multimodal and long-context tasks.`,
+      },
+      {
+        title: 'GPU-co-designed kernel',
+        body: `MSA is co-designed with a custom CUDA kernel. The Index Branch uses an exp-free Top-k selection that fits the tensor-core path, and the Main Branch runs KV-outer block-sparse attention that reuses dense matmul primitives instead of writing a custom sparse kernel from scratch.
+
+This is the part that turns a theoretical 28.4× compute reduction into a 14.2× prefill and 7.6× decoding wall-clock speedup on H800.`,
+      },
+      {
+        title: 'Long-context results',
+        body: `On a 109B intermediate-scale model with native multimodal training, MSA matches full GQA quality while cutting per-token attention compute by 28.4× at 1M context. The kernel delivers 9× prefill and 15× decode speedups over MiniMax-M2 at the same 1M context length.`,
+      },
+      {
+        title: 'Why it matters',
+        body: `MiniMax-M3 is the first open model that treats 'serve a 1M-context multimodal MoE cheaply' as a solved systems problem, not a research goal. MSA is a stronger long-context play than most open-weights MoE attention variants and is released with a public kernel, so the rest of the field can build on it.`,
+      },
+    ],
     note: 'A million-token context stops being a curiosity when you can actually serve it cheaply. Sparse attention is the part that makes "native multimodal" a deployment story, not a benchmark screenshot.',
     path: [
       ['MSA (MiniMax Sparse Attention)', 'keeps the model\u2019s quality at long context while slashing prefill and decode cost.'],
@@ -584,6 +784,46 @@ export const papers = [
     authors: 'Moonshot AI',
     tags: ['mixture of experts', 'multimodal'],
     abstract: 'Kimi K3 is a 2.8T-parameter MoE model with 104B activated, native vision (MoonViT-V2), and 1M-token context. The paper introduces Kimi Delta Attention (KDA), a bounded linear attention that mixes 3:1 with Gated MLA; Attention Residuals (AttnRes) for selectively revisiting earlier layers; and Stable LatentMoE with 896 experts. A custom RL stack (partial rollouts, AgentENV microVMs, MoonEP expert parallelism) supports hour-long agentic training. Scaling efficiency improves ~2.5× over Kimi K2.',
+    sections: [
+      {
+        title: 'Abstract',
+        body: `Kimi K3 is a 2.8T-parameter MoE model with 104B activated, native vision (MoonViT-V2), and 1M-token context. The paper introduces Kimi Delta Attention (KDA), a bounded linear attention that mixes 3:1 with Gated MLA; Attention Residuals (AttnRes) for selectively revisiting earlier layers; and Stable LatentMoE with 896 experts. A custom RL stack (partial rollouts, AgentENV microVMs, MoonEP expert parallelism) supports hour-long agentic training. Scaling efficiency improves ~2.5× over Kimi K2.`,
+      },
+      {
+        title: 'Architecture: KDA + Gated MLA',
+        body: `Kimi K3's attention is a 3:1 mix of Kimi Delta Attention (KDA), a bounded linear attention that compresses history into a fixed-size state, and Gated MLA, a full-attention layer that periodically re-reads the raw context. KDA is parameterised with bounded decay so the matmul stays on dense tensor-core paths instead of falling back to custom kernels.
+
+The result is that 1M-context inference stays cheap: KDA carries the long tail, Gated MLA rescues the global lookups.`,
+      },
+      {
+        title: 'Architecture: Attention Residuals (AttnRes)',
+        body: `Standard residual connections compress everything into a single hidden state, which loses information from intermediate layers as the network deepens. AttnRes lets each layer query a small set of earlier layer blocks (every ~12 layers, aggregated into 8 blocks) instead of just the previous output.
+
+This is a way to bring the 'attend over the past' idea from sequence to depth, and it generalises outside MoE: any deep transformer could in principle use it.`,
+      },
+      {
+        title: 'Architecture: Stable LatentMoE',
+        body: `With 896 routed experts and 16 active per token, MoE load balancing becomes a numerical-stability problem as much as a routing problem. K3 introduces Stable LatentMoE: experts run on a 3584-dim latent (half the hidden width), the output is RMSNormed, and a SiTU-GLU activation caps the output magnitude so FP8 training does not overflow.
+
+Load balancing is handled by Quantile Balancing, which adjusts per-expert routing bias from the empirical quantile of recent routing scores instead of incremental bias nudges.`,
+      },
+      {
+        title: 'Training: slime and MoonEP',
+        body: `K3's RL infrastructure is a co-located, asynchronous stack with partial rollouts: long agent trajectories pause while the policy updates, and Firecracker-based microVMs snapshot the agent's filesystem between turns. The team reports creating over 51M sandboxes during training and evaluation.
+
+MoonEP is a custom expert-parallel communication library that dynamically duplicates hot experts so every GPU processes the same number of tokens. It is released open source.`,
+      },
+      {
+        title: 'Results',
+        body: `On Terminal-Bench 2.1, K3 lands within a few points of Claude Opus 4.8. On SWE-bench Pro it leads among open-weights models. On long-horizon kernel-optimization tasks that run for 12-24 hours, K3 sustains the longest continuous improvement among the open models.
+
+K3 also ships native multimodal: MoonViT-V2 is trained from scratch with next-token prediction, not from a CLIP-style contrastive warmup, and the paper shows this is more stable and equally capable.`,
+      },
+      {
+        title: 'Why it matters',
+        body: `Kimi K3 is the first open-weights 3T-class model, and the first to ship hour-long agent RL as a first-class training regime. The interesting parts are not the parameter count but the systems stack: bounded attention, depth-attention, latent experts, partial rollouts, snapshot sandboxes. Each of these is independently reusable.`,
+      },
+    ],
     note: 'The interesting part is not the parameter count but the systems stack: an attention that compresses, residuals that rewind, experts that balance by quantiles, and a sandbox that pauses while the model thinks. Long-horizon agents need all four at once.',
     pdfUrl: 'https://github.com/MoonshotAI/Kimi-K3/blob/main/k3_tech_report.pdf',
     absUrl: 'https://github.com/MoonshotAI/Kimi-K3',
