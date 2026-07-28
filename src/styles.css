@@ -99,10 +99,6 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .stage-intro, .stage-status { width: min(100%, 770px); display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .stage-intro { margin-bottom: clamp(2rem, 6vh, 5rem); color: oklch(0.69 0.025 210); font-size: 0.83rem; }
 .stage-intro p { margin: 0; }
-.stage-nav { display: flex; align-items: center; gap: 0.65rem; min-width: 0; }
-.stage-nav-arrow { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; border: 1px solid oklch(0.5 0.07 72 / 0.6); background: oklch(0.12 0.018 72 / 0.55); color: var(--amber-bright); font-size: 1.1rem; line-height: 1; cursor: pointer; transition: background 180ms ease, transform 180ms ease, border-color 180ms ease; }
-.stage-nav-arrow:hover:not(:disabled) { background: oklch(0.22 0.05 72); transform: translateY(-1px); border-color: oklch(0.6 0.09 72); }
-.stage-nav-arrow:disabled { opacity: 0.32; cursor: not-allowed; border-color: oklch(0.32 0.018 210 / 0.7); background: transparent; color: var(--muted); }
 .stage-nav-meta { display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; }
 .stage-nav-meta p { color: oklch(0.69 0.025 210); font-size: 0.83rem; }
 .stage-nav-hint { color: oklch(0.5 0.014 210); font-size: 0.66rem; letter-spacing: 0.04em; text-transform: uppercase; }

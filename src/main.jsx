@@ -234,13 +234,9 @@ function App() {
 
         <section className="reading-stage" aria-label="Active paper">
           <div className="stage-intro">
-            <div className="stage-nav" role="group" aria-label="Move between papers">
-              <button className="stage-nav-arrow" type="button" onClick={() => goToPaper(prevPaper)} disabled={!prevPaper} aria-label={prevPaper ? `Previous paper: ${prevPaper.title}` : 'No previous paper'}>‹</button>
-              <div className="stage-nav-meta">
-                <p>Open research, read slowly.</p>
-                <span className="stage-nav-hint">Use <kbd>←</kbd> <kbd>→</kbd> or the buttons to turn the page</span>
-              </div>
-              <button className="stage-nav-arrow" type="button" onClick={() => goToPaper(nextPaper)} disabled={!nextPaper} aria-label={nextPaper ? `Next paper: ${nextPaper.title}` : 'No next paper'}>›</button>
+            <div className="stage-nav-meta">
+              <p>Open research, read slowly.</p>
+              <span className="stage-nav-hint">Use <kbd>←</kbd> <kbd>→</kbd> to turn the page</span>
             </div>
             <button type="button" className={saved ? 'save-button is-saved' : 'save-button'} onClick={() => setSaved((value) => !value)} aria-pressed={saved}>{saved ? 'Saved to notes' : 'Save insight'}<span aria-hidden="true">↗</span></button>
           </div>
