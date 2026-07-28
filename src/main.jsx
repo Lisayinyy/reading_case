@@ -1,33 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
+import { papers, PAGE_SIZE, totalPages } from './papers.js'
 import './styles.css'
-
-const papers = [
-  {
-    id: 'attention', code: '1706.03762', year: '2017', title: 'Attention Is All You Need', authors: 'Vaswani et al.', tags: ['architecture', 'foundational'],
-    abstract: 'The dominant sequence transduction models are based on complex recurrent or convolutional neural networks. This paper proposes a simpler architecture based solely on attention mechanisms, dispensing with recurrence and convolutions entirely.',
-    note: 'Replace the memory of a sequence with a map of relationships. The model reads every token in relation to the others.',
-    path: [['Self-attention', 'lets each token select what matters in the rest of the sequence.'], ['Multiple heads', 'preserve several kinds of relationships at the same time.'], ['Position signals', 'supply the order that recurrence once carried.']]
-  },
-  {
-    id: 'llama', code: '2302.13971', year: '2023', title: 'LLaMA: Open and Efficient Foundation Language Models', authors: 'Touvron et al.', tags: ['open weights', 'foundation'],
-    abstract: 'We introduce LLaMA, a collection of foundation language models ranging from 7B to 65B parameters. The models are trained on publicly available datasets and show that smaller, well-trained models can be highly competitive.',
-    note: 'Scale is not only a question of parameter count. The quality and curation of the training mixture changes what a small model can become.',
-    path: [['Public training data', 'moves a capable family of models into a reproducible research conversation.'], ['Token budget', 'shows why more compute can sometimes outperform a larger parameter count.'], ['Model family', 'turns one training recipe into several practical deployment sizes.']]
-  },
-  {
-    id: 'mistral', code: '2310.06825', year: '2023', title: 'Mistral 7B', authors: 'Jiang et al.', tags: ['efficiency', 'open weights'],
-    abstract: 'Mistral 7B is a language model with 7.3 billion parameters that outperforms larger models across several benchmarks. Grouped-query attention and sliding-window attention make the architecture efficient at inference time.',
-    note: 'This is an efficiency paper with a product instinct: spend memory where readers of the context actually need it, not everywhere at once.',
-    path: [['Sliding windows', 'keep long contexts tractable by localizing most attention work.'], ['Grouped queries', 'share key-value heads to reduce the inference-memory burden.'], ['Benchmark framing', 'compares capability against the cost of making it available.']]
-  },
-  {
-    id: 'deepseek', code: '2401.02954', year: '2024', title: 'DeepSeekMoE: Towards Ultimate Expert Specialization', authors: 'Dai et al.', tags: ['mixture of experts', 'routing'],
-    abstract: 'DeepSeekMoE introduces finer-grained expert segmentation and shared experts to improve specialization in mixture-of-experts language models. The approach increases capacity while keeping computation per token controlled.',
-    note: 'A mixture-of-experts model is a library with many rooms. The routing policy decides which rooms deserve to stay lit for each question.',
-    path: [['Fine-grained experts', 'break broad capabilities into smaller, more distinct computational roles.'], ['Shared experts', 'keep common knowledge available without making every route duplicate it.'], ['Sparse activation', 'grows total capacity while preserving a bounded cost per token.']]
-  }
-]
 
 function useReducedMotion() {
   const [reduced, setReduced] = useState(false)
@@ -96,7 +70,7 @@ function ParticleMist({ active, reduced }) {
   return <canvas className="particle-mist" ref={canvasRef} aria-hidden="true" />
 }
 
-function PaperDocument({ paper, illuminated = false }) {
+function PaperDocument({ paper, position, total, illuminated = false }) {
   return (
     <article className={`paper-document ${illuminated ? 'paper-document--lit' : ''}`} aria-label={`${paper.title} paper preview`}>
       <header className="paper-header">
@@ -114,7 +88,7 @@ function PaperDocument({ paper, illuminated = false }) {
           {paper.path.map(([heading, explanation], index) => <li key={heading}><span>{String(index + 1).padStart(2, '0')}</span><p><strong>{heading}</strong> {explanation}</p></li>)}
         </ol>
       </section>
-      <footer className="paper-footer"><span>12 min to finish</span><span>1 / 4 in your shelf</span></footer>
+      <footer className="paper-footer"><span>12 min to finish</span><span>{String(position).padStart(2, '0')} / {String(total).padStart(2, '0')} in your shelf</span></footer>
     </article>
   )
 }
@@ -131,10 +105,29 @@ function App() {
   const [query, setQuery] = useState('')
   const [saved, setSaved] = useState(false)
   const [light, setLight] = useState({ x: 50, y: 45, tilt: 0 })
+  const [currentPage, setCurrentPage] = useState(0)
   const reduced = useReducedMotion()
 
-  const visiblePapers = useMemo(() => papers.filter((paper) => `${paper.title} ${paper.authors} ${paper.tags.join(' ')}`.toLowerCase().includes(query.toLowerCase())), [query])
+  // Filter first; paginate only when the user is not searching.
+  const filteredPapers = useMemo(
+    () => papers.filter((paper) => `${paper.title} ${paper.authors} ${paper.tags.join(' ')}`.toLowerCase().includes(query.toLowerCase())),
+    [query],
+  )
+  const searching = query.trim().length > 0
+  const pagedPapers = useMemo(
+    () => (searching ? filteredPapers : filteredPapers.slice(currentPage * PAGE_SIZE, currentPage * PAGE_SIZE + PAGE_SIZE)),
+    [filteredPapers, currentPage, searching],
+  )
   const stageStyle = { '--light-x': `${light.x}%`, '--light-y': `${light.y}%`, '--lamp-x': `${Math.max(23, Math.min(77, light.x))}%`, '--lamp-tilt': `${light.tilt}deg` }
+
+  // When the user is on a non-searching page, sync the active paper to the current page so the highlight is always visible.
+  useEffect(() => {
+    if (searching) return
+    if (pagedPapers.length === 0) return
+    if (!pagedPapers.some((paper) => paper.id === activePaper.id)) {
+      setActivePaper(pagedPapers[0])
+    }
+  }, [pagedPapers, searching, activePaper.id])
 
   useEffect(() => {
     if (reduced || !lampOn) return undefined
@@ -168,7 +161,7 @@ function App() {
     <main className={`app ${lampOn ? 'lamp-on' : 'lamp-off'}`}>
       <header className="topbar">
         <a className="brand" href="#reading-room" aria-label="Reading Case home"><span className="brand-mark">R</span><span>Reading Case</span></a>
-        <nav aria-label="Primary navigation"><a href="#reading-room" aria-current="page">Read</a><a href="#shelf">Shelf <span>04</span></a><a href="#notes">Notes</a></nav>
+        <nav aria-label="Primary navigation"><a href="#reading-room" aria-current="page">Read</a><a href="#shelf">Shelf <span>{String(papers.length).padStart(2, '0')}</span></a><a href="#notes">Notes</a></nav>
         <div className="topbar-actions"><button className="icon-button" type="button" aria-label="Toggle lamp" aria-pressed={lampOn} onClick={() => setLampOn((value) => !value)}><LampIcon on={lampOn} /></button><button className="avatar" type="button" aria-label="Open Reading Case profile">RC</button></div>
       </header>
 
@@ -181,20 +174,34 @@ function App() {
         <div className="lamp-rig" aria-hidden="true"><i className="lamp-wire" /><div className="lamp-canopy" /><div className="lamp-shade"><span className="lamp-bulb" /></div></div>
 
         <aside className="library-rail" id="shelf" aria-label="Reading shelf">
-          <div className="rail-heading"><span>Your shelf</span><span>{papers.length} papers</span></div>
+          <div className="rail-heading"><span>Your shelf</span><span>{searching ? `${filteredPapers.length} / ${papers.length} papers` : `${String(currentPage * PAGE_SIZE + pagedPapers.length).padStart(2, '0')} / ${String(papers.length).padStart(2, '0')} papers`}</span></div>
           <label className="search-box"><span className="sr-only">Search papers</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search the shelf" /><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="5.8" fill="none" stroke="currentColor" strokeWidth="1.7" /><path d="m15.2 15.2 4 4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></svg></label>
           <div className="paper-list">
-            {visiblePapers.map((paper) => <button className={`paper-choice ${paper.id === activePaper.id ? 'is-active' : ''}`} key={paper.id} type="button" onClick={() => setActivePaper(paper)}><span className="choice-index">{paper.id === activePaper.id ? '●' : paper.year.slice(-2)}</span><span><strong>{paper.title}</strong><small>{paper.authors}</small></span></button>)}
-            {visiblePapers.length === 0 && <p className="empty-state">No paper matches “{query}”.</p>}
+            {pagedPapers.map((paper) => <button className={`paper-choice ${paper.id === activePaper.id ? 'is-active' : ''}`} key={paper.id} type="button" onClick={() => setActivePaper(paper)}><span className="choice-index">{paper.id === activePaper.id ? '●' : paper.year.slice(-2)}</span><span><strong>{paper.title}</strong><small>{paper.authors}</small></span></button>)}
+            {pagedPapers.length === 0 && <p className="empty-state">No paper matches “{query}”.</p>}
           </div>
+          <div className="pager" role="group" aria-label="Paginate reading shelf">
+            <button className="pager-arrow" type="button" onClick={() => setCurrentPage((value) => Math.max(0, value - 1))} disabled={searching || currentPage === 0} aria-label="Previous page">‹</button>
+            <ol className="pager-pages" aria-label={`Page ${currentPage + 1} of ${totalPages}`}>
+              {Array.from({ length: totalPages }, (_, index) => (
+                <li key={index}>
+                  <button className={`pager-page ${index === currentPage ? 'is-active' : ''}`} type="button" onClick={() => setCurrentPage(index)} disabled={searching} aria-label={`Go to page ${index + 1}`} aria-current={index === currentPage ? 'page' : undefined}>
+                    {String(index + 1).padStart(2, '0')}
+                  </button>
+                </li>
+              ))}
+            </ol>
+            <button className="pager-arrow" type="button" onClick={() => setCurrentPage((value) => Math.min(totalPages - 1, value + 1))} disabled={searching || currentPage === totalPages - 1} aria-label="Next page">›</button>
+          </div>
+          <p className="pager-hint" aria-live="polite">{searching ? 'Searching across every page' : `Showing ${String(currentPage * PAGE_SIZE + 1).padStart(2, '0')}–${String(currentPage * PAGE_SIZE + pagedPapers.length).padStart(2, '0')} of ${String(papers.length).padStart(2, '0')}`}</p>
           <div className="rail-tip"><span>Tip</span><p>The lamp stays with you while the paper moves beneath it.</p></div>
         </aside>
 
         <section className="reading-stage" aria-label="Active paper">
           <div className="stage-intro"><p>Open research, read slowly.</p><button type="button" className={saved ? 'save-button is-saved' : 'save-button'} onClick={() => setSaved((value) => !value)} aria-pressed={saved}>{saved ? 'Saved to notes' : 'Save insight'}<span aria-hidden="true">↗</span></button></div>
           <div className="document-stack">
-            <PaperDocument paper={activePaper} />
-            <div className="lit-document-mask" aria-hidden="true"><PaperDocument paper={activePaper} illuminated /></div>
+            <PaperDocument paper={activePaper} position={papers.findIndex((paper) => paper.id === activePaper.id) + 1} total={papers.length} />
+            <div className="lit-document-mask" aria-hidden="true"><PaperDocument paper={activePaper} position={papers.findIndex((paper) => paper.id === activePaper.id) + 1} total={papers.length} illuminated /></div>
           </div>
           <div className="stage-status"><span><i /> lamp {lampOn ? 'on' : 'off'}</span><span>the light follows your pointer and scroll</span></div>
         </section>
