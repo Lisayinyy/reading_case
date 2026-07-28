@@ -71,10 +71,15 @@ function ParticleMist({ active, reduced }) {
 }
 
 function PaperDocument({ paper, position, total, illuminated = false }) {
+  const arxivUrl = `https://arxiv.org/abs/${paper.code}`
+  const pdfUrl = `https://arxiv.org/pdf/${paper.code}`
   return (
     <article className={`paper-document ${illuminated ? 'paper-document--lit' : ''}`} aria-label={`${paper.title} paper preview`}>
       <header className="paper-header">
-        <div className="paper-kicker"><span>Reading now</span><span>arXiv:{paper.code}</span></div>
+        <div className="paper-kicker">
+          <span>Reading now</span>
+          <a className="paper-arxiv" href={arxivUrl} target="_blank" rel="noopener noreferrer" aria-label={`Open ${paper.title} on arXiv in a new tab`}>arXiv:{paper.code}<span aria-hidden="true">↗</span></a>
+        </div>
         <h1>{paper.title}</h1>
         <p className="paper-authors">{paper.authors} · {paper.year}</p>
         <div className="paper-tags">{paper.tags.map((tag) => <span key={tag}>{tag}</span>)}</div>
@@ -88,7 +93,13 @@ function PaperDocument({ paper, position, total, illuminated = false }) {
           {paper.path.map(([heading, explanation], index) => <li key={heading}><span>{String(index + 1).padStart(2, '0')}</span><p><strong>{heading}</strong> {explanation}</p></li>)}
         </ol>
       </section>
-      <footer className="paper-footer"><span>12 min to finish</span><span>{String(position).padStart(2, '0')} / {String(total).padStart(2, '0')} in your shelf</span></footer>
+      <footer className="paper-footer">
+        <span>12 min to finish</span>
+        <span className="paper-footer-meta">
+          <a className="paper-link" href={pdfUrl} target="_blank" rel="noopener noreferrer" aria-label={`Download ${paper.title} as PDF`}>Read full paper<span aria-hidden="true">↗</span></a>
+          <span className="paper-footer-position">{String(position).padStart(2, '0')} / {String(total).padStart(2, '0')} in your shelf</span>
+        </span>
+      </footer>
     </article>
   )
 }
