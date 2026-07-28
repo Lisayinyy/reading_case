@@ -127,6 +127,9 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .paper-tags span { padding: 0.3rem 0.52rem; border: 1px solid oklch(0.5 0.032 210 / 0.5); border-radius: 999px; color: oklch(0.31 0.035 210); font-size: 0.66rem; }
 .paper-body { padding: 2.3rem clamp(1.6rem, 6vw, 5.5rem) 2.7rem; max-width: 70ch; }
 .section-label { margin: 0 0 0.85rem; color: oklch(0.38 0.05 210); font-size: 0.67rem; font-weight: 700; letter-spacing: 0.095em; text-transform: uppercase; }
+.paper-section + .paper-section { margin-top: 2.2rem; padding-top: 1.6rem; border-top: 1px solid oklch(0.56 0.025 80 / 0.5); }
+.section-body { margin: 0 0 0.9rem; font-family: ui-serif, Georgia, "Times New Roman", serif; font-size: clamp(1rem, 1.35vw, 1.12rem); line-height: 1.65; color: oklch(0.18 0.014 210); }
+.section-body:last-child { margin-bottom: 0; }
 .abstract { margin: 0; font-family: ui-serif, Georgia, "Times New Roman", serif; font-size: clamp(1.1rem, 1.55vw, 1.32rem); line-height: 1.68; }
 .reading-note { margin: 2.2rem 0; padding: 1.1rem 0 1.1rem 1.2rem; border-block: 1px solid oklch(0.5 0.026 210 / 0.4); }
 .reading-note span { color: oklch(0.4 0.05 210); font-size: 0.67rem; font-weight: 700; letter-spacing: 0.075em; text-transform: uppercase; }

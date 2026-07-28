@@ -380,6 +380,36 @@ export const papers = [
     authors: 'DeepSeek-AI',
     tags: ['mixture of experts', 'foundation'],
     abstract: 'DeepSeek-V3 is a 671B-parameter MoE model activating 37B per token, trained on 14.8T tokens. Multi-head Latent Attention, an auxiliary-loss-free balancing objective, and multi-token prediction make the training highly efficient.',
+    sections: [
+      {
+        title: 'Abstract',
+        body: 'DeepSeek-V3 is a 671B-parameter MoE model with 37B activated for each token. To achieve efficient inference and cost-effective training, it adopts Multi-head Latent Attention (MLA) and DeepSeekMoE architectures, which were thoroughly validated in DeepSeek-V2. DeepSeek-V3 pioneers an auxiliary-loss-free strategy for load balancing and sets a multi-token prediction training objective for stronger performance. It is pre-trained on 14.8T diverse and high-quality tokens, followed by SFT and RL stages. Comprehensive evaluations show it outperforms other open-source models and is competitive with leading closed-source models. The full training requires only 2.788M H800 GPU hours with no irrecoverable loss spikes and no rollbacks.',
+      },
+      {
+        title: 'Architecture',
+        body: 'DeepSeek-V3 keeps the DeepSeek-V2 backbone — Multi-head Latent Attention (MLA) for KV-cache compression, plus DeepSeekMoE for sparse expert routing — and adds two refinements.\n\nThe first is an auxiliary-loss-free load-balancing strategy. Instead of adding an extra balancing loss to the training objective, V3 keeps a running per-expert bias term that is dynamically updated based on whether each expert is over- or under-loaded. This preserves model quality while still routing tokens roughly evenly.\n\nThe second is Multi-Token Prediction (MTP): an additional training head that predicts the next two tokens using shared embedding and output projection. MTP densifies the training signal and serves as a built-in draft model for speculative decoding at inference time.',
+      },
+      {
+        title: 'Training efficiency',
+        body: 'Pre-training runs on 2048 H800 GPUs across 256 nodes with a hybrid 16-way pipeline parallel, 64-way expert parallel, and ZeRO-1 data parallel layout. The team introduces DualPipe, which overlaps forward and backward passes of adjacent micro-batches in a way that hides most of the pipeline bubble.\n\nCommunication is hidden inside compute: the MoE all-to-all sends are carefully pipelined with the expert GEMMs, and a token is allowed to land on at most 4 nodes so NVLink can saturate before the slower IB kicks in. The full pre-training consumed 2.664M H800 GPU hours, and the entire post-training pipeline (SFT + RL + R1-distillation) adds only 0.1M H800 hours on top.',
+      },
+      {
+        title: 'FP8 mixed precision',
+        body: 'For the first time at this scale, DeepSeek-V3 is trained end-to-end in FP8 mixed precision. The team refines the standard per-tensor scaling approach into a fine-grained blockwise scaling scheme for both weights and activations, and routes a portion of the FP32 accumulation through CUDA cores so the GEMM keeps enough precision to remain stable.\n\nThe result is that V3 ships in native FP8 weights, and BF16 versions can be derived losslessly for hardware that needs them — no retraining required.',
+      },
+      {
+        title: 'Post-training: knowledge distillation from R1',
+        body: 'For the chat model, DeepSeek distills reasoning ability from a long-CoT DeepSeek-R1 model into V3 by mixing R1-style verification and reflection patterns into the SFT data. The pipeline is lightweight: no PPO, no separate reward model — just curated reasoning traces that teach V3 to self-check.\n\nThis single technique delivers the bulk of V3\u2019s reasoning gains while keeping the model\u2019s output style and length within normal chat conventions.',
+      },
+      {
+        title: 'Results',
+        body: 'DeepSeek-V3 outperforms other open-source models on MMLU, BBH, HumanEval, MATH, and the standard chat benchmarks, and is competitive with closed frontier models including GPT-4o and Claude-3.5-Sonnet at release time. The team reports zero irrecoverable loss spikes and no rollbacks across the entire pre-training run.',
+      },
+      {
+        title: 'Why it matters',
+        body: 'DeepSeek-V3 is the first open MoE at this scale to ship without auxiliary balancing losses, the first to be trained end-to-end in FP8, and one of the first to demonstrate that a 671B MoE can be pre-trained in under 3M H800 hours. The combination — quality competitive with closed frontier, training cost orders of magnitude lower, and weights released — reset the cost curve for open-weights frontier models.',
+      },
+    ],
     note: 'The end of “MoE needs special tricks to be stable”. Auxiliary-loss-free balancing reads as a small change, but it changes the entire optimization story.',
     path: [
       ['671B / 37B active', 'capacity close to a frontier dense model at a fraction of the inference cost.'],
@@ -502,6 +532,28 @@ export const papers = [
     authors: 'GLM-5 Team',
     tags: ['foundation', 'agentic'],
     abstract: 'GLM-5 is a 744B-parameter MoE model with 40B activated, scaling from GLM-4.5 and trained on 28.5T tokens. The paper introduces DeepSeek Sparse Attention (DSA) for long-context efficiency, a new slime asynchronous RL infrastructure for post-training, and demonstrates strong agentic coding performance on real-world software engineering tasks.',
+    sections: [
+      {
+        title: 'Abstract',
+        body: 'GLM-5 is a 744B-parameter MoE model with 40B activated, scaling from GLM-4.5 and trained on 28.5T tokens. The paper introduces DeepSeek Sparse Attention (DSA) for long-context efficiency, a new slime asynchronous RL infrastructure for post-training, and demonstrates strong agentic coding performance on real-world software engineering tasks.',
+      },
+      {
+        title: 'Architecture',
+        body: 'The base model is a sparse MoE with 744B total / 40B active parameters, more than double GLM-4.5 (355B / 32B active). For long-context efficiency, GLM-5 adopts DeepSeek Sparse Attention (DSA): attention is computed only over a learned subset of cached key/value tokens, which keeps the cost of million-token contexts bounded.\n\nA four-stage curriculum (8K → 64K → 256K → 1M tokens) with synthetic long-horizon data trains the model to actually use the long window without collapsing to local patterns.',
+      },
+      {
+        title: 'Post-training: slime async RL',
+        body: 'Post-training has three stages: SFT on high-quality agent trajectories, RL on three task families (general, general-agentic, code-agentic) each split into three reasoning-effort buckets, and multi-teacher same-policy distillation that merges the nine specialists into one.\n\nThe RL infrastructure is the real story. slime is a co-located, asynchronous RL stack that decouples rollout generation from policy updates so slow long-horizon trajectories do not stall the cluster. Combined with FP8 mixed-precision training, slime lets the team run meaningful RL on a 744B model without burning through the kind of GPU budget closed labs use.',
+      },
+      {
+        title: 'Results',
+        body: 'On the in-house CC-Bench-V2 suite (frontend, backend, long-horizon tasks), GLM-5 substantially outperforms GLM-4.7 and closes most of the gap to Claude Opus 4.5.\n\nOn Vending Bench 2 — a one-year simulated vending-machine business that measures long-horizon planning and resource management — GLM-5 ranks #1 among open-source models with a final balance of $4,432, approaching Claude Opus 4.5 and ahead of GPT-5.5 and Claude Opus 4.7.',
+      },
+      {
+        title: 'Why it matters',
+        body: 'GLM-5 is the first open-weights model to credibly challenge frontier closed models on agentic engineering tasks. The technical contribution is not the model itself but the slime infrastructure: making long-horizon RL tractable at this scale is what lets a 744B model behave like an engineer instead of a chat partner, and it is what open labs will reuse across families.',
+      },
+    ],
     note: 'The frontier keeps splitting: a smaller, smarter open model on a shelf of recipes, with RL infrastructure that finally scales to million-token trajectories. Agentic engineering is now a problem of data + systems, not just parameters.',
     path: [
       ['DSA (DeepSeek Sparse Attention)', 'compresses long-context attention so deployment cost does not scale with token count.'],

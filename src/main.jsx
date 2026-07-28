@@ -85,13 +85,33 @@ function PaperDocument({ paper, position, total, illuminated = false }) {
         <div className="paper-tags">{paper.tags.map((tag) => <span key={tag}>{tag}</span>)}</div>
       </header>
       <section className="paper-body">
-        <div className="section-label">Abstract</div>
-        <p className="abstract">{paper.abstract}</p>
-        <aside className="reading-note"><span>Reading Case note</span><p>{paper.note}</p></aside>
-        <div className="section-label">A short reading path</div>
-        <ol className="reading-path">
-          {paper.path.map(([heading, explanation], index) => <li key={heading}><span>{String(index + 1).padStart(2, '0')}</span><p><strong>{heading}</strong> {explanation}</p></li>)}
-        </ol>
+        {paper.sections ? (
+          <>
+            {paper.sections.map((section) => (
+              <div key={section.title} className="paper-section">
+                <div className="section-label">{section.title}</div>
+                {section.body.split('\n\n').map((paragraph, index) => (
+                  <p key={index} className="section-body">{paragraph}</p>
+                ))}
+              </div>
+            ))}
+            <aside className="reading-note"><span>Reading Case note</span><p>{paper.note}</p></aside>
+            <div className="section-label">A short reading path</div>
+            <ol className="reading-path">
+              {paper.path.map(([heading, explanation], index) => <li key={heading}><span>{String(index + 1).padStart(2, '0')}</span><p><strong>{heading}</strong> {explanation}</p></li>)}
+            </ol>
+          </>
+        ) : (
+          <>
+            <div className="section-label">Abstract</div>
+            <p className="abstract">{paper.abstract}</p>
+            <aside className="reading-note"><span>Reading Case note</span><p>{paper.note}</p></aside>
+            <div className="section-label">A short reading path</div>
+            <ol className="reading-path">
+              {paper.path.map(([heading, explanation], index) => <li key={heading}><span>{String(index + 1).padStart(2, '0')}</span><p><strong>{heading}</strong> {explanation}</p></li>)}
+            </ol>
+          </>
+        )}
       </section>
       <footer className="paper-footer">
         <span>12 min to finish</span>
