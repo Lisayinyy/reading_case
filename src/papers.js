@@ -492,6 +492,56 @@ export const papers = [
       ['Agentic abilities', 'tuned to operate a phone or browser from screenshots.'],
     ],
   },
+
+  // ───────────────────────────── Page 5 · Open Frontier 2026 ─────────────────────────────
+  {
+    id: 'glm-5',
+    code: '2602.15763',
+    year: '2026',
+    title: 'GLM-5: From Vibe Coding to Agentic Engineering',
+    authors: 'GLM-5 Team',
+    tags: ['foundation', 'agentic'],
+    abstract: 'GLM-5 is a 744B-parameter MoE model with 40B activated, scaling from GLM-4.5 and trained on 28.5T tokens. The paper introduces DeepSeek Sparse Attention (DSA) for long-context efficiency, a new slime asynchronous RL infrastructure for post-training, and demonstrates strong agentic coding performance on real-world software engineering tasks.',
+    note: 'The frontier keeps splitting: a smaller, smarter open model on a shelf of recipes, with RL infrastructure that finally scales to million-token trajectories. Agentic engineering is now a problem of data + systems, not just parameters.',
+    path: [
+      ['DSA (DeepSeek Sparse Attention)', 'compresses long-context attention so deployment cost does not scale with token count.'],
+      ['slime async RL', 'decouples rollout generation from policy updates, making post-training tractable at 744B.'],
+      ['Vibe → agentic', 'the same model writes code, runs it, reads the failure, and iterates — closing the loop on engineering tasks.'],
+    ],
+  },
+  {
+    id: 'MiniMax-m3',
+    code: '2606.13392',
+    year: '2026',
+    title: 'MiniMax-M3: A Native Multimodal Model with Sparse Attention and a Million-Token Context',
+    authors: 'MiniMax-AI',
+    tags: ['multimodal', 'efficiency'],
+    abstract: 'MiniMax-M3 is a native multimodal model with a 1M-token context, ~428B total parameters, and ~23B activated. The paper introduces MiniMax Sparse Attention (MSA), which delivers 9× prefill and 15× decode speedups over M2 at 1M context, reducing per-token compute to 1/20. M3 is trained with mixed text/image/video from the first step, and reaches frontier coding and cowork performance.',
+    note: 'A million-token context stops being a curiosity when you can actually serve it cheaply. Sparse attention is the part that makes "native multimodal" a deployment story, not a benchmark screenshot.',
+    path: [
+      ['MSA (MiniMax Sparse Attention)', 'keeps the model\u2019s quality at long context while slashing prefill and decode cost.'],
+      ['Native multimodality', 'text, image, and video are trained together from step one, not bolted on after.'],
+      ['Coding + cowork', 'the same model sustains long-horizon agentic work, not just single-turn chat.'],
+    ],
+  },
+  {
+    id: 'kimi-k3',
+    code: 'kimi-k3-2026',
+    year: '2026',
+    title: 'Kimi K3: An Open 3T-Class Model with Native Multimodality and 1M Context',
+    authors: 'Moonshot AI',
+    tags: ['mixture of experts', 'multimodal'],
+    abstract: 'Kimi K3 is a 2.8T-parameter MoE model with 104B activated, native vision (MoonViT-V2), and 1M-token context. The paper introduces Kimi Delta Attention (KDA), a bounded linear attention that mixes 3:1 with Gated MLA; Attention Residuals (AttnRes) for selectively revisiting earlier layers; and Stable LatentMoE with 896 experts. A custom RL stack (partial rollouts, AgentENV microVMs, MoonEP expert parallelism) supports hour-long agentic training. Scaling efficiency improves ~2.5× over Kimi K2.',
+    note: 'The interesting part is not the parameter count but the systems stack: an attention that compresses, residuals that rewind, experts that balance by quantiles, and a sandbox that pauses while the model thinks. Long-horizon agents need all four at once.',
+    pdfUrl: 'https://github.com/MoonshotAI/Kimi-K3/blob/main/k3_tech_report.pdf',
+    absUrl: 'https://github.com/MoonshotAI/Kimi-K3',
+    venue: 'Tech Report',
+    path: [
+      ['KDA + Gated MLA', 'a 3:1 mix of bounded linear attention and global attention keeps the long context cheap.'],
+      ['AttnRes', 'attends back to earlier layer blocks, not just the previous hidden state — depth stops being a one-way street.'],
+      ['MoonEP + partial rollout', 'hardware-level expert balancing and resumable sandboxes let the same loop train hour-long agent trajectories.'],
+    ],
+  },
 ]
 
 export const totalPages = Math.ceil(papers.length / PAGE_SIZE)

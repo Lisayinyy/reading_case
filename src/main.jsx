@@ -71,14 +71,14 @@ function ParticleMist({ active, reduced }) {
 }
 
 function PaperDocument({ paper, position, total, illuminated = false }) {
-  const arxivUrl = `https://arxiv.org/abs/${paper.code}`
-  const pdfUrl = `https://arxiv.org/pdf/${paper.code}`
+  const arxivUrl = paper.absUrl || `https://arxiv.org/abs/${paper.code}`
+  const pdfUrl = paper.pdfUrl || `https://arxiv.org/pdf/${paper.code}`
   return (
     <article className={`paper-document ${illuminated ? 'paper-document--lit' : ''}`} aria-label={`${paper.title} paper preview`}>
       <header className="paper-header">
         <div className="paper-kicker">
           <span>Reading now</span>
-          <a className="paper-arxiv" href={arxivUrl} target="_blank" rel="noopener noreferrer" aria-label={`Open ${paper.title} on arXiv in a new tab`}>arXiv:{paper.code}<span aria-hidden="true">↗</span></a>
+          <a className="paper-arxiv" href={arxivUrl} target="_blank" rel="noopener noreferrer" aria-label={`Open ${paper.title} on ${paper.venue || 'arXiv'} in a new tab`}>{paper.venue ? `${paper.venue}:${paper.code}` : `arXiv:${paper.code}`}<span aria-hidden="true">↗</span></a>
         </div>
         <h1>{paper.title}</h1>
         <p className="paper-authors">{paper.authors} · {paper.year}</p>
