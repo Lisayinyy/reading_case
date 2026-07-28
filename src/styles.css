@@ -139,6 +139,22 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .reading-path span { color: oklch(0.42 0.06 210); font-size: 0.73rem; }
 .reading-path p { margin: 0; font-size: 0.9rem; line-height: 1.5; }
 .paper-footer { margin-top: auto; padding: 1.25rem clamp(1.6rem, 6vw, 5.5rem); border-top: 1px solid oklch(0.56 0.025 80 / 0.5); }
+.pdf-viewer { display: flex; flex-direction: column; gap: 1rem; }
+.pdf-toolbar { display: flex; align-items: center; gap: 0.4rem; padding: 0.55rem 0.75rem; border: 1px solid oklch(0.56 0.025 80 / 0.5); border-radius: 0.5rem; background: oklch(0.95 0.012 85); color: oklch(0.22 0.014 210); position: sticky; top: 0; z-index: 2; font-size: 0.78rem; }
+.pdf-tool { display: inline-grid; place-items: center; min-width: 32px; height: 30px; padding: 0 0.55rem; border: 1px solid oklch(0.5 0.022 80 / 0.4); border-radius: 999px; background: transparent; color: oklch(0.22 0.014 210); font-size: 0.95rem; line-height: 1; cursor: pointer; transition: background 160ms ease, color 160ms ease, border-color 160ms ease; }
+.pdf-tool:hover:not(:disabled) { background: oklch(0.88 0.03 72 / 0.4); border-color: oklch(0.55 0.08 72 / 0.5); }
+.pdf-tool:disabled { opacity: 0.32; cursor: not-allowed; }
+.pdf-zoom-label { min-width: 52px; font-variant-numeric: tabular-nums; font-size: 0.7rem; letter-spacing: 0.04em; }
+.pdf-tool-sep { width: 1px; height: 18px; background: oklch(0.5 0.022 80 / 0.4); margin: 0 0.25rem; }
+.pdf-page-indicator { flex: 1; text-align: center; color: oklch(0.4 0.025 210); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; font-variant-numeric: tabular-nums; }
+.pdf-canvas-wrap { position: relative; min-height: 600px; display: grid; place-items: start center; padding: 0.5rem 0; }
+.pdf-canvas { display: block; background: white; box-shadow: 0 8px 24px oklch(0.05 0 0 / 0.4); max-width: 100%; height: auto; }
+.pdf-status { padding: 4rem 1rem; color: oklch(0.4 0.025 210); font-size: 0.85rem; text-align: center; font-style: italic; }
+.pdf-status--error { color: oklch(0.45 0.18 28); font-weight: 600; }
+.pdf-status-detail { display: inline-block; margin-top: 0.5rem; color: oklch(0.5 0.025 210); font-style: italic; font-weight: 400; font-size: 0.78rem; }
+.paper-summary { margin-top: 1.5rem; padding: 1.2rem clamp(1.6rem, 6vw, 5.5rem) 1.6rem; border-top: 1px dashed oklch(0.56 0.025 80 / 0.5); }
+.paper-summary summary { cursor: pointer; color: oklch(0.4 0.05 210); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; user-select: none; }
+.paper-summary summary:hover { color: oklch(0.22 0.014 210); }
 .lit-document-mask { position: absolute; inset: 0; overflow: hidden; pointer-events: none; opacity: 0; -webkit-mask-image: radial-gradient(ellipse 29% 34% at var(--light-x) var(--light-y), black 0%, black 34%, transparent 100%); mask-image: radial-gradient(ellipse 29% 34% at var(--light-x) var(--light-y), black 0%, black 34%, transparent 100%); transition: opacity 300ms ease; }
 .lamp-on .lit-document-mask { opacity: 1; }
 .paper-document--lit { min-height: 100%; box-shadow: none; filter: none !important; }

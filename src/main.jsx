@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
+import * as pdfjsLib from 'pdfjs-dist'
+import workerSrc from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 import { papers, PAGE_SIZE, totalPages } from './papers.js'
 import './styles.css'
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc
 
 function useReducedMotion() {
   const [reduced, setReduced] = useState(false)
@@ -70,6 +74,120 @@ function ParticleMist({ active, reduced }) {
   return <canvas className="particle-mist" ref={canvasRef} aria-hidden="true" />
 }
 
+function PdfViewer({ pdfUrl, paperTitle, onLoaded }) {
+  const canvasRef = useRef(null)
+  const renderTaskRef = useRef(null)
+  const [pdf, setPdf] = useState(null)
+  const [pageNum, setPageNum] = useState(1)
+  const [totalPages, setTotalPages] = useState(0)
+  const [scale, setScale] = useState(1.4)
+  const [status, setStatus] = useState('loading') // loading | ready | error
+  const [errorMessage, setErrorMessage] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+    setStatus('loading')
+    setPdf(null)
+    setPageNum(1)
+    setTotalPages(0)
+    setErrorMessage('')
+    const loadingTask = pdfjsLib.getDocument({
+      url: pdfUrl,
+      cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/cmaps/',
+      cMapPacked: true,
+      withCredentials: false,
+    })
+    loadingTask.promise
+      .then((loaded) => {
+        if (cancelled) {
+          loaded.destroy()
+          return
+        }
+        setPdf(loaded)
+        setTotalPages(loaded.numPages)
+        setStatus('ready')
+        if (onLoaded) onLoaded(loaded.numPages)
+      })
+      .catch((err) => {
+        if (cancelled) return
+        setStatus('error')
+        setErrorMessage(err && err.message ? err.message : 'Failed to load PDF')
+      })
+    return () => {
+      cancelled = true
+      loadingTask.destroy()
+    }
+  }, [pdfUrl])
+
+  useEffect(() => {
+    if (!pdf || !canvasRef.current) return
+    if (renderTaskRef.current) {
+      renderTaskRef.current.cancel()
+      renderTaskRef.current = null
+    }
+    let cancelled = false
+    pdf.getPage(pageNum).then((page) => {
+      if (cancelled) return
+      const viewport = page.getViewport({ scale })
+      const canvas = canvasRef.current
+      const context = canvas.getContext('2d')
+      const devicePixelRatio = window.devicePixelRatio || 1
+      canvas.width = Math.round(viewport.width * devicePixelRatio)
+      canvas.height = Math.round(viewport.height * devicePixelRatio)
+      canvas.style.width = `${Math.round(viewport.width)}px`
+      canvas.style.height = `${Math.round(viewport.height)}px`
+      const transform = devicePixelRatio !== 1 ? [devicePixelRatio, 0, 0, devicePixelRatio, 0, 0] : null
+      const task = page.render({ canvasContext: context, viewport, transform })
+      renderTaskRef.current = task
+      return task.promise
+    }).catch(() => {})
+    return () => {
+      cancelled = true
+      if (renderTaskRef.current) {
+        renderTaskRef.current.cancel()
+        renderTaskRef.current = null
+      }
+    }
+  }, [pdf, pageNum, scale])
+
+  useEffect(() => () => {
+    if (pdf) pdf.destroy()
+  }, [pdf])
+
+  const goPrev = () => setPageNum((n) => Math.max(1, n - 1))
+  const goNext = () => setPageNum((n) => Math.min(totalPages, n + 1))
+  const zoomIn = () => setScale((s) => Math.min(2.5, +(s + 0.2).toFixed(2)))
+  const zoomOut = () => setScale((s) => Math.max(0.6, +(s - 0.2).toFixed(2)))
+  const zoomReset = () => setScale(1.4)
+
+  return (
+    <div className="pdf-viewer">
+      <div className="pdf-toolbar" role="toolbar" aria-label="PDF controls">
+        <button className="pdf-tool" type="button" onClick={goPrev} disabled={status !== 'ready' || pageNum <= 1} aria-label="Previous page">‹</button>
+        <span className="pdf-page-indicator" aria-live="polite">
+          {status === 'ready' ? `Page ${pageNum} / ${totalPages}` : status === 'loading' ? 'Loading PDF…' : 'PDF unavailable'}
+        </span>
+        <button className="pdf-tool" type="button" onClick={goNext} disabled={status !== 'ready' || pageNum >= totalPages} aria-label="Next page">›</button>
+        <span className="pdf-tool-sep" />
+        <button className="pdf-tool" type="button" onClick={zoomOut} disabled={status !== 'ready'} aria-label="Zoom out">−</button>
+        <button className="pdf-tool pdf-zoom-label" type="button" onClick={zoomReset} disabled={status !== 'ready'} aria-label="Reset zoom">{Math.round(scale * 100)}%</button>
+        <button className="pdf-tool" type="button" onClick={zoomIn} disabled={status !== 'ready'} aria-label="Zoom in">+</button>
+      </div>
+      <div className="pdf-canvas-wrap">
+        {status === 'loading' && <div className="pdf-status">Fetching {paperTitle}…</div>}
+        {status === 'error' && (
+          <div className="pdf-status pdf-status--error">
+            Could not load PDF.
+            <br />
+            <span className="pdf-status-detail">{errorMessage}</span>
+          </div>
+        )}
+        <canvas ref={canvasRef} className="pdf-canvas" aria-label={`${paperTitle} page ${pageNum}`} />
+      </div>
+    </div>
+  )
+}
+
 function PaperDocument({ paper, position, total, illuminated = false }) {
   const arxivUrl = paper.absUrl || `https://arxiv.org/abs/${paper.code}`
   const pdfUrl = paper.pdfUrl || `https://arxiv.org/pdf/${paper.code}`
@@ -85,8 +203,10 @@ function PaperDocument({ paper, position, total, illuminated = false }) {
         <div className="paper-tags">{paper.tags.map((tag) => <span key={tag}>{tag}</span>)}</div>
       </header>
       <section className="paper-body">
+        <PdfViewer pdfUrl={pdfUrl} paperTitle={paper.title} />
         {paper.sections ? (
-          <>
+          <details className="paper-summary">
+            <summary>Read the structured summary instead</summary>
             {paper.sections.map((section) => (
               <div key={section.title} className="paper-section">
                 <div className="section-label">{section.title}</div>
@@ -100,23 +220,13 @@ function PaperDocument({ paper, position, total, illuminated = false }) {
             <ol className="reading-path">
               {paper.path.map(([heading, explanation], index) => <li key={heading}><span>{String(index + 1).padStart(2, '0')}</span><p><strong>{heading}</strong> {explanation}</p></li>)}
             </ol>
-          </>
-        ) : (
-          <>
-            <div className="section-label">Abstract</div>
-            <p className="abstract">{paper.abstract}</p>
-            <aside className="reading-note"><span>Reading Case note</span><p>{paper.note}</p></aside>
-            <div className="section-label">A short reading path</div>
-            <ol className="reading-path">
-              {paper.path.map(([heading, explanation], index) => <li key={heading}><span>{String(index + 1).padStart(2, '0')}</span><p><strong>{heading}</strong> {explanation}</p></li>)}
-            </ol>
-          </>
-        )}
+          </details>
+        ) : null}
       </section>
       <footer className="paper-footer">
         <span>12 min to finish</span>
         <span className="paper-footer-meta">
-          <a className="paper-link" href={pdfUrl} target="_blank" rel="noopener noreferrer" aria-label={`Download ${paper.title} as PDF`}>Read full paper<span aria-hidden="true">↗</span></a>
+          <a className="paper-link" href={pdfUrl} target="_blank" rel="noopener noreferrer" aria-label={`Download ${paper.title} as PDF`}>Open in new tab<span aria-hidden="true">↗</span></a>
           <span className="paper-footer-position">{String(position).padStart(2, '0')} / {String(total).padStart(2, '0')} in your shelf</span>
         </span>
       </footer>
