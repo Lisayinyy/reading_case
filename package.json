@@ -10,9 +10,9 @@
   },
   "dependencies": {
     "@vitejs/plugin-react": "latest",
-    "pdfjs-dist": "^4.10.38",
+    "vite": "latest",
     "react": "latest",
-    "react-dom": "latest",
-    "vite": "latest"
-  }
+    "react-dom": "latest"
+  },
+  "devDependencies": {}
 }

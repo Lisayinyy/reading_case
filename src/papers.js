@@ -68,7 +68,7 @@ export const papers = [
   },
   {
     id: 'gpt-neox',
-    code: '2204.06745',
+    code: '2201.11990',
     year: '2022',
     title: 'GPT-NeoX-20B: An Open-Source Autoregressive Language Model',
     authors: 'Black et al.',
@@ -825,7 +825,7 @@ K3 also ships native multimodal: MoonViT-V2 is trained from scratch with next-to
       },
     ],
     note: 'The interesting part is not the parameter count but the systems stack: an attention that compresses, residuals that rewind, experts that balance by quantiles, and a sandbox that pauses while the model thinks. Long-horizon agents need all four at once.',
-    pdfUrl: 'https://raw.githubusercontent.com/MoonshotAI/Kimi-K3/main/k3_tech_report.pdf',
+    pdfUrl: 'https://github.com/MoonshotAI/Kimi-K3/blob/main/k3_tech_report.pdf',
     absUrl: 'https://github.com/MoonshotAI/Kimi-K3',
     venue: 'Tech Report',
     path: [
