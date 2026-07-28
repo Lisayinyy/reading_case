@@ -131,6 +131,18 @@ function App() {
   )
   const stageStyle = { '--light-x': `${light.x}%`, '--light-y': `${light.y}%`, '--lamp-x': `${Math.max(23, Math.min(77, light.x))}%`, '--lamp-tilt': `${light.tilt}deg` }
 
+  // Prev / Next operate on the full shelf (not the paginated slice) so the user can read the 32 papers in order without having to flip pages manually.
+  const activeIndex = useMemo(() => papers.findIndex((paper) => paper.id === activePaper.id), [activePaper.id])
+  const prevPaper = activeIndex > 0 ? papers[activeIndex - 1] : null
+  const nextPaper = activeIndex >= 0 && activeIndex < papers.length - 1 ? papers[activeIndex + 1] : null
+  const goToPaper = (target) => {
+    if (!target) return
+    setActivePaper(target)
+    if (searching) return
+    const targetPage = Math.floor(papers.findIndex((paper) => paper.id === target.id) / PAGE_SIZE)
+    if (targetPage !== currentPage) setCurrentPage(targetPage)
+  }
+
   // When the user is on a non-searching page, sync the active paper to the current page so the highlight is always visible.
   useEffect(() => {
     if (searching) return
@@ -139,6 +151,18 @@ function App() {
       setActivePaper(pagedPapers[0])
     }
   }, [pagedPapers, searching, activePaper.id])
+
+  // Keyboard shortcuts: ← / → to move between papers (skipped while typing in the search box).
+  useEffect(() => {
+    const onKey = (event) => {
+      const tag = (event.target && event.target.tagName) || ''
+      if (tag === 'INPUT' || tag === 'TEXTAREA') return
+      if (event.key === 'ArrowLeft') { goToPaper(prevPaper); event.preventDefault() }
+      else if (event.key === 'ArrowRight') { goToPaper(nextPaper); event.preventDefault() }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [prevPaper, nextPaper, searching, currentPage])
 
   useEffect(() => {
     if (reduced || !lampOn) return undefined
@@ -209,7 +233,17 @@ function App() {
         </aside>
 
         <section className="reading-stage" aria-label="Active paper">
-          <div className="stage-intro"><p>Open research, read slowly.</p><button type="button" className={saved ? 'save-button is-saved' : 'save-button'} onClick={() => setSaved((value) => !value)} aria-pressed={saved}>{saved ? 'Saved to notes' : 'Save insight'}<span aria-hidden="true">↗</span></button></div>
+          <div className="stage-intro">
+            <div className="stage-nav" role="group" aria-label="Move between papers">
+              <button className="stage-nav-arrow" type="button" onClick={() => goToPaper(prevPaper)} disabled={!prevPaper} aria-label={prevPaper ? `Previous paper: ${prevPaper.title}` : 'No previous paper'}>‹</button>
+              <div className="stage-nav-meta">
+                <p>Open research, read slowly.</p>
+                <span className="stage-nav-hint">Use <kbd>←</kbd> <kbd>→</kbd> or the buttons to turn the page</span>
+              </div>
+              <button className="stage-nav-arrow" type="button" onClick={() => goToPaper(nextPaper)} disabled={!nextPaper} aria-label={nextPaper ? `Next paper: ${nextPaper.title}` : 'No next paper'}>›</button>
+            </div>
+            <button type="button" className={saved ? 'save-button is-saved' : 'save-button'} onClick={() => setSaved((value) => !value)} aria-pressed={saved}>{saved ? 'Saved to notes' : 'Save insight'}<span aria-hidden="true">↗</span></button>
+          </div>
           <div className="document-stack">
             <PaperDocument paper={activePaper} position={papers.findIndex((paper) => paper.id === activePaper.id) + 1} total={papers.length} />
             <div className="lit-document-mask" aria-hidden="true"><PaperDocument paper={activePaper} position={papers.findIndex((paper) => paper.id === activePaper.id) + 1} total={papers.length} illuminated /></div>

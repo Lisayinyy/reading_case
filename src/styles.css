@@ -99,6 +99,14 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .stage-intro, .stage-status { width: min(100%, 770px); display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .stage-intro { margin-bottom: clamp(2rem, 6vh, 5rem); color: oklch(0.69 0.025 210); font-size: 0.83rem; }
 .stage-intro p { margin: 0; }
+.stage-nav { display: flex; align-items: center; gap: 0.65rem; min-width: 0; }
+.stage-nav-arrow { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; border: 1px solid oklch(0.5 0.07 72 / 0.6); background: oklch(0.12 0.018 72 / 0.55); color: var(--amber-bright); font-size: 1.1rem; line-height: 1; cursor: pointer; transition: background 180ms ease, transform 180ms ease, border-color 180ms ease; }
+.stage-nav-arrow:hover:not(:disabled) { background: oklch(0.22 0.05 72); transform: translateY(-1px); border-color: oklch(0.6 0.09 72); }
+.stage-nav-arrow:disabled { opacity: 0.32; cursor: not-allowed; border-color: oklch(0.32 0.018 210 / 0.7); background: transparent; color: var(--muted); }
+.stage-nav-meta { display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; }
+.stage-nav-meta p { color: oklch(0.69 0.025 210); font-size: 0.83rem; }
+.stage-nav-hint { color: oklch(0.5 0.014 210); font-size: 0.66rem; letter-spacing: 0.04em; text-transform: uppercase; }
+.stage-nav-hint kbd { display: inline-block; min-width: 1.3rem; padding: 0.05rem 0.32rem; margin: 0 0.08rem; border: 1px solid oklch(0.4 0.02 210 / 0.6); border-bottom-width: 2px; border-radius: 0.3rem; background: oklch(0.13 0.012 210 / 0.7); color: oklch(0.78 0.02 210); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.62rem; line-height: 1.2; text-align: center; }
 .save-button { display: inline-flex; align-items: center; gap: 0.62rem; min-height: 42px; padding: 0.58rem 0.8rem 0.58rem 0.95rem; border: 1px solid oklch(0.47 0.06 72); border-radius: 999px; background: oklch(0.12 0.018 72 / 0.75); color: var(--amber-bright); font-size: 0.78rem; cursor: pointer; transition: transform 180ms ease, background 180ms ease; }
 .save-button:hover { transform: translateY(-1px); background: oklch(0.22 0.05 72); }
 .save-button span { font-size: 1rem; line-height: 0; }
