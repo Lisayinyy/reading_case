@@ -1,4 +1,4 @@
-# Lisa's World — Research Reading Room
+# Reading Case — Research Reading Room
 
 A Vite + React concept for reading open large-language-model research. It recreates the pendant-lamp treatment as an accessible browser effect: a warm, moving cone of light reveals a focused paper over an always-readable dim reading surface.
 

@@ -14,7 +14,7 @@ People studying open research on large language models, especially readers who n
 
 ## Product Purpose
 
-Lisa's World is a browser-based reading room for open LLM papers. The first surface makes one paper feel present and approachable, while keeping a small, useful reading queue within reach.
+Reading Case is a browser-based reading room for open LLM papers. The first surface makes one paper feel present and approachable, while keeping a small, useful reading queue within reach.
 
 ## Positioning
 

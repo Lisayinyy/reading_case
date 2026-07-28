@@ -108,7 +108,7 @@ function PaperDocument({ paper, illuminated = false }) {
       <section className="paper-body">
         <div className="section-label">Abstract</div>
         <p className="abstract">{paper.abstract}</p>
-        <aside className="reading-note"><span>Lisa’s margin note</span><p>{paper.note}</p></aside>
+        <aside className="reading-note"><span>Reading Case note</span><p>{paper.note}</p></aside>
         <div className="section-label">A short reading path</div>
         <ol className="reading-path">
           {paper.path.map(([heading, explanation], index) => <li key={heading}><span>{String(index + 1).padStart(2, '0')}</span><p><strong>{heading}</strong> {explanation}</p></li>)}
@@ -167,9 +167,9 @@ function App() {
   return (
     <main className={`app ${lampOn ? 'lamp-on' : 'lamp-off'}`}>
       <header className="topbar">
-        <a className="brand" href="#reading-room" aria-label="Lisa's World home"><span className="brand-mark">L</span><span>Lisa’s World</span></a>
+        <a className="brand" href="#reading-room" aria-label="Reading Case home"><span className="brand-mark">R</span><span>Reading Case</span></a>
         <nav aria-label="Primary navigation"><a href="#reading-room" aria-current="page">Read</a><a href="#shelf">Shelf <span>04</span></a><a href="#notes">Notes</a></nav>
-        <div className="topbar-actions"><button className="icon-button" type="button" aria-label="Toggle lamp" aria-pressed={lampOn} onClick={() => setLampOn((value) => !value)}><LampIcon on={lampOn} /></button><button className="avatar" type="button" aria-label="Open Lisa's profile">LY</button></div>
+        <div className="topbar-actions"><button className="icon-button" type="button" aria-label="Toggle lamp" aria-pressed={lampOn} onClick={() => setLampOn((value) => !value)}><LampIcon on={lampOn} /></button><button className="avatar" type="button" aria-label="Open Reading Case profile">RC</button></div>
       </header>
 
       <section className="reading-room" id="reading-room" ref={stageRef} style={stageStyle}>
@@ -199,7 +199,7 @@ function App() {
           <div className="stage-status"><span><i /> lamp {lampOn ? 'on' : 'off'}</span><span>the light follows your pointer and scroll</span></div>
         </section>
 
-        <footer className="room-footer"><span>Lisa’s World / open paper room</span><span>Built for lingering, not scrolling.</span></footer>
+        <footer className="room-footer"><span>Reading Case / open paper room</span><span>Built for lingering, not scrolling.</span></footer>
       </section>
     </main>
   )
