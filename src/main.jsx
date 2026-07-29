@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import { papers, PAGE_SIZE, totalPages } from './papers.js'
+import { advanceLightMotion, resolveLightTarget } from './lightMotion.js'
 import './styles.css'
 
 function useReducedMotion() {
@@ -24,22 +25,25 @@ function ParticleMist({ active, reduced }) {
     const context = canvas.getContext('2d')
     let frame
     let start = performance.now()
-    const particles = Array.from({ length: 70 }, (_, index) => ({
+    const particles = Array.from({ length: 48 }, (_, index) => ({
       seed: index * 0.713,
       x: 0.18 + ((index * 17) % 63) / 100,
       y: 0.2 + ((index * 29) % 45) / 100,
       radius: 1.5 + (index % 4) * 0.7,
     }))
 
+    let width = 0
+    let height = 0
     const resize = () => {
       const bounds = canvas.getBoundingClientRect()
       const scale = Math.min(window.devicePixelRatio || 1, 2)
+      width = bounds.width
+      height = bounds.height
       canvas.width = Math.max(1, Math.round(bounds.width * scale))
       canvas.height = Math.max(1, Math.round(bounds.height * scale))
       context.setTransform(scale, 0, 0, scale, 0, 0)
     }
     const draw = (now) => {
-      const { width, height } = canvas.getBoundingClientRect()
       const time = (now - start) / 1000
       context.clearRect(0, 0, width, height)
       particles.forEach((particle) => {
@@ -130,12 +134,13 @@ function LampIcon({ on }) {
 
 function App() {
   const stageRef = useRef(null)
+  const documentStackRef = useRef(null)
   const pointerRef = useRef(null)
+  const lightMotionRef = useRef({ current: null, target: null })
   const [lampOn, setLampOn] = useState(true)
   const [activePaper, setActivePaper] = useState(papers[0])
   const [query, setQuery] = useState('')
   const [saved, setSaved] = useState(false)
-  const [light, setLight] = useState({ x: 50, y: 45, tilt: 0 })
   const [currentPage, setCurrentPage] = useState(0)
   const reduced = useReducedMotion()
 
@@ -149,8 +154,6 @@ function App() {
     () => (searching ? filteredPapers : filteredPapers.slice(currentPage * PAGE_SIZE, currentPage * PAGE_SIZE + PAGE_SIZE)),
     [filteredPapers, currentPage, searching],
   )
-  const stageStyle = { '--light-x': `${light.x}%`, '--light-y': `${light.y}%`, '--lamp-x': `${Math.max(23, Math.min(77, light.x))}%`, '--lamp-tilt': `${light.tilt}deg` }
-
   // Prev / Next operate on the full shelf (not the paginated slice) so the user can read the 32 papers in order without having to flip pages manually.
   const activeIndex = useMemo(() => papers.findIndex((paper) => paper.id === activePaper.id), [activePaper.id])
   const prevPaper = activeIndex > 0 ? papers[activeIndex - 1] : null
@@ -186,22 +189,48 @@ function App() {
 
   useEffect(() => {
     if (reduced || !lampOn) return undefined
-    const updateLightPosition = () => {
-      const stage = stageRef.current
-      if (!stage) return
-      const rect = stage.getBoundingClientRect()
+    const stage = stageRef.current
+    const documentStack = documentStackRef.current
+    if (!stage || !documentStack) return undefined
+    let frame
+    let previousFrame = performance.now()
+
+    const updateTarget = () => {
       const pointer = pointerRef.current ?? { x: window.innerWidth / 2, y: window.innerHeight / 2 }
-      const x = ((pointer.x - rect.left) / rect.width) * 100
-      const y = ((pointer.y - rect.top) / rect.height) * 100
-      const boundedX = Math.max(12, Math.min(88, x))
-      setLight({ x: boundedX, y: Math.max(19, Math.min(78, y)), tilt: Math.max(-10, Math.min(10, (boundedX - 50) * 0.17)) })
+      const target = resolveLightTarget({
+        pointer,
+        viewport: { width: window.innerWidth, height: window.innerHeight },
+        documentRect: documentStack.getBoundingClientRect(),
+      })
+      lightMotionRef.current.target = target
+      if (!lightMotionRef.current.current) lightMotionRef.current.current = target
     }
+
+    const animate = (now) => {
+      const target = lightMotionRef.current.target
+      if (target) {
+        const motion = advanceLightMotion(lightMotionRef.current.current, target, (now - previousFrame) / 1000)
+        lightMotionRef.current.current = motion
+        const coneHalfWidth = Math.min(window.innerWidth * 0.37, 485)
+        stage.style.setProperty('--lamp-x', `${motion.x}px`)
+        stage.style.setProperty('--cone-x', `${motion.x - coneHalfWidth}px`)
+        stage.style.setProperty('--lamp-tilt', `${motion.tilt}deg`)
+        documentStack.style.setProperty('--light-x', `${motion.documentX}%`)
+        documentStack.style.setProperty('--light-y', `${motion.documentY}%`)
+      }
+      previousFrame = now
+      frame = requestAnimationFrame(animate)
+    }
+
     const followCursor = (event) => {
       pointerRef.current = { x: event.clientX, y: event.clientY }
-      updateLightPosition()
+      updateTarget()
     }
-    const followScroll = () => updateLightPosition()
-    updateLightPosition()
+    const followScroll = () => updateTarget()
+    const resizeObserver = new ResizeObserver(updateTarget)
+    updateTarget()
+    frame = requestAnimationFrame(animate)
+    resizeObserver.observe(documentStack)
     window.addEventListener('pointermove', followCursor, { passive: true })
     window.addEventListener('scroll', followScroll, { passive: true })
     window.addEventListener('resize', followScroll)
@@ -209,6 +238,8 @@ function App() {
       window.removeEventListener('pointermove', followCursor)
       window.removeEventListener('scroll', followScroll)
       window.removeEventListener('resize', followScroll)
+      resizeObserver.disconnect()
+      cancelAnimationFrame(frame)
     }
   }, [lampOn, reduced])
 
@@ -220,7 +251,7 @@ function App() {
         <div className="topbar-actions"><button className="icon-button" type="button" aria-label="Toggle lamp" aria-pressed={lampOn} onClick={() => setLampOn((value) => !value)}><LampIcon on={lampOn} /></button><button className="avatar" type="button" aria-label="Open Reading Case profile">RC</button></div>
       </header>
 
-      <section className="reading-room" id="reading-room" ref={stageRef} style={stageStyle}>
+      <section className="reading-room" id="reading-room" ref={stageRef}>
         <div className="room-grain" aria-hidden="true" />
         <div className="room-haze" aria-hidden="true" />
         <div className="light-cone" aria-hidden="true" />
@@ -269,7 +300,7 @@ function App() {
             </div>
             <button type="button" className={saved ? 'save-button is-saved' : 'save-button'} onClick={() => setSaved((value) => !value)} aria-pressed={saved}>{saved ? 'Saved to notes' : 'Save insight'}<span aria-hidden="true">↗</span></button>
           </div>
-          <div className="document-stack">
+          <div className="document-stack" ref={documentStackRef}>
             <PaperDocument paper={activePaper} position={papers.findIndex((paper) => paper.id === activePaper.id) + 1} total={papers.length} />
             <div className="lit-document-mask" aria-hidden="true"><PaperDocument paper={activePaper} position={papers.findIndex((paper) => paper.id === activePaper.id) + 1} total={papers.length} illuminated /></div>
           </div>
