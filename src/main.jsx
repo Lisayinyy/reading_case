@@ -232,7 +232,16 @@ function App() {
           <div className="rail-heading"><span>Your shelf</span><span>{searching ? `${filteredPapers.length} / ${papers.length} papers` : `${String(currentPage * PAGE_SIZE + pagedPapers.length).padStart(2, '0')} / ${String(papers.length).padStart(2, '0')} papers`}</span></div>
           <label className="search-box"><span className="sr-only">Search papers</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search the shelf" /><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="5.8" fill="none" stroke="currentColor" strokeWidth="1.7" /><path d="m15.2 15.2 4 4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" /></svg></label>
           <div className="paper-list">
-            {pagedPapers.map((paper) => <button className={`paper-choice ${paper.id === activePaper.id ? 'is-active' : ''}`} key={paper.id} type="button" onClick={() => setActivePaper(paper)}><span className="choice-index">{paper.id === activePaper.id ? '●' : paper.year.slice(-2)}</span><span><strong>{paper.title}</strong><small>{paper.authors}</small></span></button>)}
+            {pagedPapers.map((paper) => {
+              const shelfPosition = papers.findIndex(({ id }) => id === paper.id) + 1
+
+              return (
+                <button className={`paper-choice ${paper.id === activePaper.id ? 'is-active' : ''}`} key={paper.id} type="button" onClick={() => setActivePaper(paper)}>
+                  <span className="choice-index">{String(shelfPosition).padStart(2, '0')}</span>
+                  <span><strong>{paper.title}</strong><small>{paper.authors}</small></span>
+                </button>
+              )
+            })}
             {pagedPapers.length === 0 && <p className="empty-state">No paper matches “{query}”.</p>}
           </div>
           <div className="pager" role="group" aria-label="Paginate reading shelf">
