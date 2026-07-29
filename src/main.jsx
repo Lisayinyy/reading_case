@@ -215,6 +215,12 @@ function App() {
         stage.style.setProperty('--lamp-x', `${motion.x}px`)
         stage.style.setProperty('--cone-x', `${motion.x - coneHalfWidth}px`)
         stage.style.setProperty('--lamp-tilt', `${motion.tilt}deg`)
+        stage.style.setProperty('--lamp-y', `${motion.elevation}px`)
+        stage.style.setProperty('--cone-y', `${motion.elevation * 0.6}px`)
+        stage.style.setProperty('--lamp-depth', `${motion.depth}px`)
+        stage.style.setProperty('--lamp-scale', motion.scale)
+        stage.style.setProperty('--lamp-pitch', `${motion.pitch}deg`)
+        stage.style.setProperty('--cone-scale', motion.coneScale)
         documentStack.style.setProperty('--light-x', `${motion.documentX}%`)
         documentStack.style.setProperty('--light-y', `${motion.documentY}%`)
       }

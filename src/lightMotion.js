@@ -4,16 +4,23 @@ export function clamp(value, minimum, maximum) {
 
 export function resolveLightTarget({ pointer, viewport, documentRect }) {
   const viewportWidth = Math.max(1, viewport.width)
+  const viewportHeight = Math.max(1, viewport.height)
   const lampPadding = Math.min(80, Math.max(44, viewportWidth * 0.06))
   const documentWidth = Math.max(1, documentRect.width)
   const documentHeight = Math.max(1, documentRect.height)
   const lampX = clamp(pointer.x, lampPadding, viewportWidth - lampPadding)
+  const depthProgress = clamp(pointer.y / viewportHeight, 0, 1) * 2 - 1
 
   return {
     x: lampX,
     documentX: clamp(((pointer.x - documentRect.left) / documentWidth) * 100, 4, 96),
     documentY: clamp(((pointer.y - documentRect.top) / documentHeight) * 100, 6, 94),
     tilt: clamp(((lampX / viewportWidth) - 0.5) * 16, -8, 8),
+    elevation: depthProgress * 22,
+    depth: depthProgress * 70,
+    scale: 1 + depthProgress * 0.07,
+    pitch: depthProgress * -4,
+    coneScale: 1 + depthProgress * 0.1,
   }
 }
 
@@ -27,5 +34,10 @@ export function advanceLightMotion(current, target, deltaSeconds) {
     documentX: current.documentX + (target.documentX - current.documentX) * follow,
     documentY: current.documentY + (target.documentY - current.documentY) * follow,
     tilt: current.tilt + (target.tilt - current.tilt) * tiltFollow,
+    elevation: current.elevation + (target.elevation - current.elevation) * follow,
+    depth: current.depth + (target.depth - current.depth) * follow,
+    scale: current.scale + (target.scale - current.scale) * follow,
+    pitch: current.pitch + (target.pitch - current.pitch) * tiltFollow,
+    coneScale: current.coneScale + (target.coneScale - current.coneScale) * follow,
   }
 }
