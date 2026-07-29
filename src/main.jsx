@@ -221,6 +221,11 @@ function App() {
         stage.style.setProperty('--lamp-scale', motion.scale)
         stage.style.setProperty('--lamp-pitch', `${motion.pitch}deg`)
         stage.style.setProperty('--cone-scale', motion.coneScale)
+        stage.style.setProperty('--bulb-scale', motion.bulbScale)
+        stage.style.setProperty('--bulb-bottom', `${motion.bulbBottom}px`)
+        stage.style.setProperty('--rim-height', `${motion.rimHeight}px`)
+        stage.style.setProperty('--bulb-opacity', motion.bulbOpacity)
+        stage.style.setProperty('--bulb-glow', motion.bulbGlow)
         documentStack.style.setProperty('--light-x', `${motion.documentX}%`)
         documentStack.style.setProperty('--light-y', `${motion.documentY}%`)
       }

@@ -10,6 +10,7 @@ export function resolveLightTarget({ pointer, viewport, documentRect }) {
   const documentHeight = Math.max(1, documentRect.height)
   const lampX = clamp(pointer.x, lampPadding, viewportWidth - lampPadding)
   const depthProgress = clamp(pointer.y / viewportHeight, 0, 1) * 2 - 1
+  const proximity = (depthProgress + 1) / 2
 
   return {
     x: lampX,
@@ -21,6 +22,11 @@ export function resolveLightTarget({ pointer, viewport, documentRect }) {
     scale: 1 + depthProgress * 0.07,
     pitch: depthProgress * -4,
     coneScale: 1 + depthProgress * 0.1,
+    bulbScale: 0.78 + proximity * 0.38,
+    bulbBottom: 30 - proximity * 12,
+    rimHeight: 31 - proximity * 12,
+    bulbOpacity: 0.72 + proximity * 0.28,
+    bulbGlow: 0.62 + proximity * 0.38,
   }
 }
 
@@ -39,5 +45,10 @@ export function advanceLightMotion(current, target, deltaSeconds) {
     scale: current.scale + (target.scale - current.scale) * follow,
     pitch: current.pitch + (target.pitch - current.pitch) * tiltFollow,
     coneScale: current.coneScale + (target.coneScale - current.coneScale) * follow,
+    bulbScale: current.bulbScale + (target.bulbScale - current.bulbScale) * follow,
+    bulbBottom: current.bulbBottom + (target.bulbBottom - current.bulbBottom) * follow,
+    rimHeight: current.rimHeight + (target.rimHeight - current.rimHeight) * follow,
+    bulbOpacity: current.bulbOpacity + (target.bulbOpacity - current.bulbOpacity) * follow,
+    bulbGlow: current.bulbGlow + (target.bulbGlow - current.bulbGlow) * follow,
   }
 }

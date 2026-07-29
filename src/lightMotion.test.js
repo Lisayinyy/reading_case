@@ -18,12 +18,15 @@ test('keeps the lamp mobile near viewport edges while the document spotlight sta
   assert.ok(left.depth < 0 && right.depth > 0)
   assert.ok(left.elevation < 0 && right.elevation > 0)
   assert.ok(left.scale < 1 && right.scale > 1)
+  assert.ok(left.bulbScale < right.bulbScale)
+  assert.ok(left.bulbBottom > right.bulbBottom)
+  assert.ok(left.rimHeight > right.rimHeight)
 })
 
 test('eases toward a new target without overshooting it', () => {
   const next = advanceLightMotion(
-    { x: 600, documentX: 50, documentY: 50, tilt: 0, elevation: 0, depth: 0, scale: 1, pitch: 0, coneScale: 1 },
-    { x: 1000, documentX: 90, documentY: 70, tilt: 6, elevation: 18, depth: 58, scale: 1.06, pitch: -3, coneScale: 1.08 },
+    { x: 600, documentX: 50, documentY: 50, tilt: 0, elevation: 0, depth: 0, scale: 1, pitch: 0, coneScale: 1, bulbScale: 0.9, bulbBottom: 27, rimHeight: 28, bulbOpacity: 0.8, bulbGlow: 0.75 },
+    { x: 1000, documentX: 90, documentY: 70, tilt: 6, elevation: 18, depth: 58, scale: 1.06, pitch: -3, coneScale: 1.08, bulbScale: 1.12, bulbBottom: 19, rimHeight: 19, bulbOpacity: 1, bulbGlow: 1 },
     1 / 60,
   )
 
@@ -33,4 +36,6 @@ test('eases toward a new target without overshooting it', () => {
   assert.ok(next.tilt > 0 && next.tilt < 6)
   assert.ok(next.depth > 0 && next.depth < 58)
   assert.ok(next.scale > 1 && next.scale < 1.06)
+  assert.ok(next.bulbScale > 0.9 && next.bulbScale < 1.12)
+  assert.ok(next.bulbBottom < 27 && next.bulbBottom > 19)
 })
