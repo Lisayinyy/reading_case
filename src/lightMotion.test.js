@@ -13,8 +13,8 @@ test('keeps the ceiling anchor fixed while pointer position changes the two swin
   assert.equal(right.anchorX, 600)
   assert.ok(left.targetSwingZ < 0 && right.targetSwingZ > 0)
   assert.ok(left.targetSwingX > 0 && right.targetSwingX < 0)
-  assert.equal(left.documentX, 4)
-  assert.equal(right.documentX, 96)
+  assert.equal(left.documentLeft, 300)
+  assert.equal(right.documentWidth, 600)
 })
 
 test('builds pendulum velocity and moves the beam with the lamp rather than teleporting it', () => {
@@ -30,6 +30,8 @@ test('builds pendulum velocity and moves the beam with the lamp rather than tele
   assert.ok(next.swingZVelocity > 0)
   assert.ok(next.coneOffsetX > 0)
   assert.ok(next.coneOffsetY < 0)
+  assert.ok(next.documentX >= 12 && next.documentX <= 88)
+  assert.ok(next.documentY >= 20 && next.documentY <= 72)
 })
 
 test('starts safely from a target-only state on the first animation frame', () => {
@@ -39,4 +41,5 @@ test('starts safely from a target-only state on the first animation frame', () =
   assert.ok(Number.isFinite(next.swingX))
   assert.ok(Number.isFinite(next.swingZ))
   assert.ok(Number.isFinite(next.coneOffsetX))
+  assert.ok(Number.isFinite(next.documentX))
 })
