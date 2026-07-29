@@ -22,10 +22,10 @@ export function resolveLightTarget({ pointer, viewport, documentRect }) {
     scale: 1 + depthProgress * 0.07,
     pitch: depthProgress * -4,
     coneScale: 1 + depthProgress * 0.1,
-    bulbScale: 0.78 + proximity * 0.38,
-    rimHeight: 31 - proximity * 12,
-    bulbOpacity: 0.72 + proximity * 0.28,
-    bulbGlow: 0.62 + proximity * 0.38,
+    bulbScale: 0.96 + proximity * 0.08,
+    rimHeight: 24 - proximity * 6,
+    bulbOpacity: 1,
+    bulbGlow: 1,
   }
 }
 
