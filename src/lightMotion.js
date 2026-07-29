@@ -27,10 +27,8 @@ export function resolveLightTarget({ pointer, viewport, documentRect }) {
     anchorX: viewportWidth / 2,
     targetSwingX: vertical * -8,
     targetSwingZ: horizontal * 15,
-    documentLeft: documentRect.left,
-    documentTop: documentRect.top,
-    documentWidth,
-    documentHeight,
+    documentX: clamp(((pointer.x - documentRect.left) / documentWidth) * 100, 4, 96),
+    documentY: clamp(((pointer.y - documentRect.top) / documentHeight) * 100, 6, 94),
     coneScale: 1 - hoverStrength * 0.12,
   }
 }
@@ -39,15 +37,9 @@ export function advanceLightMotion(current, target, deltaSeconds) {
   const safeDelta = clamp(deltaSeconds, 0, 0.064)
   const swingX = advanceSpring(current.swingX ?? 0, current.swingXVelocity ?? 0, target.targetSwingX, safeDelta)
   const swingZ = advanceSpring(current.swingZ ?? 0, current.swingZVelocity ?? 0, target.targetSwingZ, safeDelta)
+  const follow = 1 - Math.exp(-18 * safeDelta)
   const swingMagnitude = Math.hypot(swingX.position, swingZ.position) * (Math.PI / 180)
   const hangLength = 160
-  const swingZRadians = swingZ.position * (Math.PI / 180)
-  const swingXRadians = swingX.position * (Math.PI / 180)
-  const sourceX = target.anchorX + Math.sin(swingZRadians) * hangLength
-  const sourceY = 184 - (1 - Math.cos(swingMagnitude)) * hangLength
-  const projectionDistance = Math.max(320, target.documentTop - sourceY + 340)
-  const projectedX = sourceX + Math.tan(swingZRadians) * projectionDistance
-  const projectedY = sourceY - Math.tan(swingXRadians) * projectionDistance
 
   return {
     anchorX: target.anchorX,
@@ -55,10 +47,10 @@ export function advanceLightMotion(current, target, deltaSeconds) {
     swingXVelocity: swingX.velocity,
     swingZ: swingZ.position,
     swingZVelocity: swingZ.velocity,
-    documentX: clamp(((projectedX - target.documentLeft) / target.documentWidth) * 100, 12, 88),
-    documentY: clamp(((projectedY - target.documentTop) / target.documentHeight) * 100, 20, 72),
-    coneScale: (current.coneScale ?? target.coneScale) + (target.coneScale - (current.coneScale ?? target.coneScale)) * (1 - Math.exp(-18 * safeDelta)),
-    coneOffsetX: Math.sin(swingZRadians) * hangLength,
+    documentX: (current.documentX ?? target.documentX) + (target.documentX - (current.documentX ?? target.documentX)) * follow,
+    documentY: (current.documentY ?? target.documentY) + (target.documentY - (current.documentY ?? target.documentY)) * follow,
+    coneScale: (current.coneScale ?? target.coneScale) + (target.coneScale - (current.coneScale ?? target.coneScale)) * follow,
+    coneOffsetX: Math.sin(swingZ.position * (Math.PI / 180)) * hangLength,
     coneOffsetY: -(1 - Math.cos(swingMagnitude)) * hangLength,
   }
 }
