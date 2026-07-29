@@ -51,7 +51,7 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .reading-room::before { content: ''; position: absolute; inset: 0; z-index: -5; background: radial-gradient(ellipse 70% 60% at 56% 55%, oklch(0.15 0.018 55 / 0.35), transparent 65%), linear-gradient(115deg, oklch(0.075 0.006 210), oklch(0.05 0.004 210) 55%); }
 .room-grain { z-index: -1; position: absolute; inset: 0; opacity: 0.12; pointer-events: none; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.8'/%3E%3C/svg%3E"); mix-blend-mode: soft-light; }
 .room-haze { z-index: -2; position: absolute; inset: -20%; pointer-events: none; background: radial-gradient(circle at 56% 45%, oklch(0.68 0.08 70 / 0.07), transparent 33%); filter: blur(30px); }
-.light-cone { position: fixed; z-index: 0; width: min(74vw, 970px); height: min(82vw, 980px); left: 0; top: 186px; pointer-events: none; opacity: 0.92; clip-path: polygon(46% 0, 54% 0, 100% 100%, 0 100%); background: radial-gradient(ellipse at 50% 0%, oklch(0.91 0.11 82 / 0.22), oklch(0.75 0.09 72 / 0.09) 38%, transparent 72%); filter: blur(4px); transform: translate3d(var(--cone-x), var(--cone-y), 0) rotate(var(--lamp-tilt)) scale(var(--cone-scale)); transform-origin: 50% 0; transition: opacity 220ms ease; will-change: transform; }
+.light-cone { position: fixed; z-index: 0; width: min(72vw, 920px); height: min(62vw, 760px); left: 0; top: 176px; pointer-events: none; opacity: 0.92; border-radius: 50%; background: radial-gradient(ellipse 48% 38% at 50% 42%, oklch(0.91 0.11 82 / 0.2), oklch(0.75 0.09 72 / 0.08) 42%, transparent 74%); filter: blur(15px); transform: translate3d(var(--cone-x), var(--cone-y), 0) rotate(var(--lamp-tilt)) scale(var(--cone-scale)); transform-origin: 50% 42%; transition: opacity 220ms ease; will-change: transform; }
 .lamp-off .light-cone, .lamp-off .particle-mist { opacity: 0; }
 .particle-mist { position: absolute; z-index: 1; inset: 0; width: 100%; height: 100%; pointer-events: none; transition: opacity 260ms ease; mix-blend-mode: screen; }
 
@@ -171,7 +171,7 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
   .stage-intro { margin-bottom: 7rem; align-items: flex-start; }
   .stage-intro p { max-width: 14ch; line-height: 1.45; }
   .lamp-rig { top: -12px; transform: translateX(-50%) scale(0.6) rotate(var(--lamp-tilt)); }
-  .light-cone { width: 115vw; height: 115vw; left: calc(var(--lamp-x) - 57.5vw); top: 104px; }
+  .light-cone { width: 122vw; height: 92vw; left: 0; top: 104px; }
   .paper-document { min-height: 570px; }
   .paper-header { padding: 1.8rem 1.35rem 1.7rem; }
   .paper-header h1 { font-size: clamp(2.15rem, 13vw, 3.3rem); }
